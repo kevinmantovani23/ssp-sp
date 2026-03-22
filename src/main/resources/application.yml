@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: ssp-sp
+ 
+  datasource:
+    # ✅ URL MySQL — troque localhost/sspsp pelo seu host/banco se necessário
+    url: ${DATABASE_URL:jdbc:mysql://localhost:3306/sspsp?useSSL=false&serverTimezone=America/Sao_Paulo&allowPublicKeyRetrieval=true}
+    username: ${DATABASE_USER:root}
+    password: ${DATABASE_PASSWORD:1609}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+ 
+  jpa:
+    hibernate:
+      ddl-auto: validate        # Flyway cuida do DDL, JPA só valida
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        # ✅ Dialect MySQL 8
+        dialect: org.hibernate.dialect.MySQLDialect
+ 
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+ 
+server:
+  port: ${PORT:8080}
+  servlet:
+    context-path: /api
+ 
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+ 
+logging:
+  level:
+    com.tcc.sspsp: DEBUG
+    org.springframework.web: INFO
+ 
