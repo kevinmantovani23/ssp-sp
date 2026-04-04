@@ -3,7 +3,6 @@ spring:
     name: ssp-sp
  
   datasource:
-    # ✅ URL MySQL — troque localhost/sspsp pelo seu host/banco se necessário
     url: ${DATABASE_URL:jdbc:mysql://localhost:3306/sspsp?useSSL=false&serverTimezone=America/Sao_Paulo&allowPublicKeyRetrieval=true}
     username: ${DATABASE_USER:root}
     password: ${DATABASE_PASSWORD:1609}
@@ -11,12 +10,11 @@ spring:
  
   jpa:
     hibernate:
-      ddl-auto: validate        # Flyway cuida do DDL, JPA só valida
+      ddl-auto: validate        
     show-sql: false
     properties:
       hibernate:
         format_sql: true
-        # ✅ Dialect MySQL 8
         dialect: org.hibernate.dialect.MySQLDialect
  
   flyway:
