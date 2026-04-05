@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.tcc.sspsp.dto.OcorrenciaDTO;
+
 import com.tcc.sspsp.model.Delegacias;
 import com.tcc.sspsp.model.Ocorrencia;
 import com.tcc.sspsp.repository.DelegaciasRepository;

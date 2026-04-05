@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.tcc.sspsp.dto.OcorrenciaDTO;
+
 import com.tcc.sspsp.model.Ocorrencia;
 
 import lombok.RequiredArgsConstructor;
