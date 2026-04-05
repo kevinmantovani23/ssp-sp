@@ -15,7 +15,7 @@ public class ImportacaoScheduler {
 	
 	@Scheduled(cron = "0 0 3 * * *")
 	public void executar() {
-	    importacaoService.importar();
+	    importacaoService.importarDadosSSP();
 	}
 	
 }
