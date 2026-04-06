@@ -8,4 +8,6 @@ import java.util.List;
 @Repository
 public interface NaturezaRepository extends JpaRepository<Natureza, Long> {
     List<Natureza> findByCaracteristica(String caracteristica);
+    
+    
 }

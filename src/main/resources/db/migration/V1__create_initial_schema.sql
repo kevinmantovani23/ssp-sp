@@ -10,6 +10,7 @@ CREATE TABLE natureza (
 
 CREATE TABLE delegacias (
     id        BIGINT       NOT NULL AUTO_INCREMENT,
+    idSSP     INT		   NOT NULL,
     delegacia VARCHAR(100) NOT NULL,
     regiao    VARCHAR(100),
     PRIMARY KEY (id)

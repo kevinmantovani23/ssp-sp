@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
@@ -72,4 +74,8 @@ public interface OcorrenciaRepository extends JpaRepository<Ocorrencia, Long> {
         ORDER BY total DESC
     """)
     List<Object[]> rankingDelegacias(@Param("ano") Integer ano);
+    
+    @Query("SELECT MAX(o.data) FROM Ocorrencia o")
+    LocalDate buscarUltimaDataImportada();
+    
 }
