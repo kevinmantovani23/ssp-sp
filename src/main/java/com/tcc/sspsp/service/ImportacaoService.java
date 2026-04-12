@@ -7,14 +7,13 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-
+import com.tcc.sspsp.client.SSPClient;
 import com.tcc.sspsp.model.Delegacias;
 import com.tcc.sspsp.model.Ocorrencia;
 import com.tcc.sspsp.repository.DelegaciasRepository;
 import com.tcc.sspsp.repository.NaturezaRepository;
 import com.tcc.sspsp.repository.OcorrenciaRepository;
 
-import client.SSPClient;
 import lombok.RequiredArgsConstructor;
 
 @Service

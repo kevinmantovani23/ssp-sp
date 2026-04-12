@@ -5,7 +5,7 @@ spring:
   datasource:
     url: ${DATABASE_URL:jdbc:mysql://localhost:3306/sspsp?useSSL=false&serverTimezone=America/Sao_Paulo&allowPublicKeyRetrieval=true}
     username: ${DATABASE_USER:root}
-    password: ${DATABASE_PASSWORD:1609}
+    password: ${DATABASE_PASSWORD:1234}
     driver-class-name: com.mysql.cj.jdbc.Driver
  
   jpa:
