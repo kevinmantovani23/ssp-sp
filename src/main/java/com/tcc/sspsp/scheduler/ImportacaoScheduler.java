@@ -1,4 +1,4 @@
-package scheduler;
+package com.tcc.sspsp.scheduler;
 
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
