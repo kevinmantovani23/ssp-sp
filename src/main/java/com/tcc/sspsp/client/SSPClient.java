@@ -107,7 +107,9 @@ public class SSPClient {
             }
 
         } catch (Exception e) {
+        	
             System.out.println("Erro ao ler Excel: " + e.getMessage());
+            
         }     
 
         return lista;
