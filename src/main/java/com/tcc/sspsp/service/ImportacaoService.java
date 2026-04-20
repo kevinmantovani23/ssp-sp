@@ -27,8 +27,8 @@ public class ImportacaoService {
 	
 	//Primeiro, realizar uma busca em nosso banco para ver o último mês/ano que foi salvo, e o mês/ano atual
 	//Obs: A API SSP só disponibiliza os dados de 2 meses atrás em diante
-	private List<YearMonth> obterMesesPendentes() {
-		LocalDate ultimaData = ocorrenciaRepository.buscarUltimaDataImportada();
+	private List<YearMonth> obterMesesPendentes(long idDelegacia) {
+		LocalDate ultimaData = ocorrenciaRepository.buscarUltimaDataImportadaPorDelegacia(idDelegacia);
 		
 		YearMonth mesAtual = YearMonth.now().minusMonths(2);
 		
@@ -68,23 +68,20 @@ public class ImportacaoService {
 	}
 	
 	public void importarDadosSSP() {
-		List<YearMonth> meses = obterMesesPendentes();
-		List<Ocorrencia> dados = new ArrayList<Ocorrencia>();
+		
 		List<Delegacias> listaDelegacias = delegaciasRepository.findAll();
+		
 		for(Delegacias delegacia : listaDelegacias) {
+			List<YearMonth> meses = obterMesesPendentes(delegacia.getId());
+			if(meses.isEmpty()) continue;
 			
-			dados = sspClient.buscarOcorrencias(meses, delegacia.getIdSSP());
-			salvarNoBanco(dados);
+			List<Ocorrencia> dados  = sspClient.buscarOcorrencias(meses, delegacia.getIdSSP());
+			
+			ocorrenciaRepository.saveAll(dados);
 		}
 		
 		
 	}
 	
-	private void salvarNoBanco(List<Ocorrencia> ocorrencias) {
-		for(Ocorrencia ocorrencia : ocorrencias) {
-			ocorrenciaRepository.save(ocorrencia);
-		}
-	}
-
 	
 }

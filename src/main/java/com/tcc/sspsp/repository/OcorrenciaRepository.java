@@ -75,7 +75,7 @@ public interface OcorrenciaRepository extends JpaRepository<Ocorrencia, Long> {
     """)
     List<Object[]> rankingDelegacias(@Param("ano") Integer ano);
     
-    @Query("SELECT MAX(o.data) FROM Ocorrencia o")
-    LocalDate buscarUltimaDataImportada();
+    @Query("SELECT MAX(o.data) FROM Ocorrencia o WHERE delegacia_id = :delegaciaid")
+    LocalDate buscarUltimaDataImportadaPorDelegacia(@Param("delegaciaid") Long idDelegacia);
     
 }
