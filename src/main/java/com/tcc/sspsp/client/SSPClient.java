@@ -107,10 +107,8 @@ public class SSPClient {
             }
 
         } catch (Exception e) {
-            throw new RuntimeException("Erro ao ler Excel", e);
-        }
-
-      
+            System.out.println("Erro ao ler Excel: " + e.getMessage());
+        }     
 
         return lista;
     }
@@ -139,10 +137,10 @@ public class SSPClient {
 	            byte[].class
 	    );
 
-	    if (response.getBody() == null) {
-	        throw new RuntimeException("Erro ao baixar Excel: resposta vazia");
+	    if (response.getBody() == null || !response.getStatusCode().is2xxSuccessful()) {
+	        throw new RuntimeException("Erro ao baixar Excel: resposta vazia HTTP CODE: " + response.getStatusCode());
 	    }
-
+	    
 	    return new ByteArrayInputStream(response.getBody());
     }
     
