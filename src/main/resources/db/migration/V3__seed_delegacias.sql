@@ -10,7 +10,6 @@ INSERT INTO delegacias(delegacia, idSSP, regiao) VALUES
 ('007 DP - Lapa', 957, 'PENDENTE'),
 ('008 DP - Brás', 934, 'PENDENTE'),
 ('009 DP - Carandiru', 915, 'PENDENTE'),
-('009 DP - Carandiru', 1604, 'PENDENTE'),
 ('01 DP Pessoa com Deficiência', 1478, 'PENDENTE'),
 ('010 DP - Penha de França', 1275, 'PENDENTE'),
 ('011 DP - Santo Amaro', 1265, 'PENDENTE'),

@@ -25,7 +25,8 @@ CREATE TABLE ocorrencia (
     PRIMARY KEY (id),
     CONSTRAINT fk_ocorrencia_natureza  FOREIGN KEY (natureza_id)  REFERENCES natureza(id),
     CONSTRAINT fk_ocorrencia_delegacia FOREIGN KEY (delegacia_id) REFERENCES delegacias(id),
-    CONSTRAINT chk_quantidade CHECK (quantidade >= 0)
+    CONSTRAINT chk_quantidade CHECK (quantidade >= 0),
+    CONSTRAINT UNIQUE (delegacia_id, natureza_id, data)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE INDEX idx_ocorrencia_data      ON ocorrencia(data);
