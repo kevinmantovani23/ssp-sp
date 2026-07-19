@@ -21,18 +21,7 @@ class SSPClientTest {
 	@Test
 	void verificarLimiteRequisição() {
 		
-		List<YearMonth> yearMonth = new ArrayList<>();
-		yearMonth.add(YearMonth.of(2024, 1));
-		int i = 0;
-		while(true) {
-			i++;
-			try {
-				sspclient.buscarOcorrencias(yearMonth, 1275);
-			} catch(Exception e) {
-				System.out.println("Erro: " + e.getMessage() + " Número de requisições: " + i);
-				break;
-			}
-		}
+		
 		
 		
 	}

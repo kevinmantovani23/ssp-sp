@@ -79,4 +79,26 @@ public interface OcorrenciaRepository extends JpaRepository<Ocorrencia, Long> {
     @Query("SELECT MAX(o.data) FROM Ocorrencia o WHERE o.delegacia.id = :delegaciaId")
     LocalDate buscarUltimaDataImportadaPorDelegacia(@Param("delegaciaId") Long idDelegacia);
     
+    // soma total de ocorrências registradas — usado no resumo de estatísticas
+    @Query("SELECT COALESCE(SUM(o.quantidade), 0) FROM Ocorrencia o")
+    Long somaTotalQuantidade();
+
+    @Query("""
+    	    SELECT SUM(o.quantidade)
+    	    FROM Ocorrencia o
+    	    WHERE o.natureza.id = :tipo
+    	      AND YEAR(o.data) = :ano
+    	    GROUP BY MONTH(o.data)
+    	    ORDER BY MONTH(o.data)
+    	""")
+    List<Long> buscarTotaisMensais(@Param("tipo") String natureza, @Param("ano") int ano);
+	
+	@Query("""
+	   SELECT MONTH(o.data) as mes, SUM(o.quantidade) as total FROM Ocorrencia o
+	   WHERE o.natureza.id = :tipo AND YEAR(o.data) = :ano
+	   GROUP BY  MONTH(o.data)
+	   ORDER BY MONTH(o.data)
+	        """)
+	List<Object[]> calcularPrevisao(@Param("tipo") String natureza, @Param("ano") int ano);
+    
 }
