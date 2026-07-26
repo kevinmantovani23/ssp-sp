@@ -23,21 +23,21 @@ public class OcorrenciaController {
     // ── GET /v1/ocorrencias ───────────────────────────────────────────────
     @GetMapping
     @Operation(
-        summary = "Lista ocorrências com filtros e paginação",
-        description = "Retorna ocorrências filtradas por ano, natureza e delegacia. Suporta paginação."
+            summary = "Lista ocorrências com filtros e paginação",
+            description = "Retorna ocorrências filtradas por ano, natureza e delegacia. Suporta paginação."
     )
     public ResponseEntity<ApiResponseDTO<Page<OcorrenciaResponseDTO>>> listar(
-        @Parameter(description = "Ano da ocorrência (ex: 2023)")
-        @RequestParam(required = false) Integer ano,
+            @Parameter(description = "Ano da ocorrência (ex: 2023)")
+            @RequestParam(required = false) Integer ano,
 
-        @Parameter(description = "ID da natureza da ocorrência")
-        @RequestParam(required = false) Long naturezaId,
+            @Parameter(description = "ID da natureza da ocorrência")
+            @RequestParam(required = false) Long naturezaId,
 
-        @Parameter(description = "ID da delegacia")
-        @RequestParam(required = false) Long delegaciaId,
+            @Parameter(description = "ID da delegacia")
+            @RequestParam(required = false) Long delegaciaId,
 
-        @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "20") int size
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
     ) {
         var filtro = new OcorrenciaFiltroDTO(ano, naturezaId, delegaciaId, page, size);
         return ResponseEntity.ok(ApiResponseDTO.ok(service.listarComFiltros(filtro)));
@@ -46,12 +46,12 @@ public class OcorrenciaController {
     // ── GET /v1/ocorrencias/totais ────────────────────────────────────────
     @GetMapping("/totais")
     @Operation(
-        summary = "Totais por natureza e ano",
-        description = "Agrupa o total de ocorrências por tipo/natureza. Ideal para gráficos de barras."
+            summary = "Totais por natureza e ano",
+            description = "Agrupa o total de ocorrências por tipo/natureza. Ideal para gráficos de barras."
     )
     public ResponseEntity<ApiResponseDTO<List<TotalNaturezaDTO>>> totaisPorNatureza(
-        @Parameter(description = "Filtrar por ano específico (opcional)")
-        @RequestParam(required = false) Integer ano
+            @Parameter(description = "Filtrar por ano específico (opcional)")
+            @RequestParam(required = false) Integer ano
     ) {
         return ResponseEntity.ok(ApiResponseDTO.ok(service.totalPorNatureza(ano)));
     }
@@ -59,40 +59,59 @@ public class OcorrenciaController {
     // ── GET /v1/ocorrencias/serie-historica ───────────────────────────────
     @GetMapping("/serie-historica")
     @Operation(
-        summary = "Série histórica mensal",
-        description = "Retorna a evolução mensal de uma natureza de ocorrência. Ideal para gráficos de linha."
+            summary = "Série histórica mensal",
+            description = "Retorna a evolução mensal de uma natureza de ocorrência. Ideal para gráficos de linha."
     )
     public ResponseEntity<ApiResponseDTO<List<SerieHistoricaDTO>>> serieHistorica(
-        @Parameter(description = "ID da natureza", required = true)
-        @RequestParam Long naturezaId,
+            @Parameter(description = "ID da natureza", required = true)
+            @RequestParam Long naturezaId,
 
-        @Parameter(description = "Ano de início do período", required = true)
-        @RequestParam(defaultValue = "2020") int anoInicio,
+            @Parameter(description = "Ano de início do período", required = true)
+            @RequestParam(defaultValue = "2020") int anoInicio,
 
-        @Parameter(description = "Ano de fim do período", required = true)
-        @RequestParam(defaultValue = "2024") int anoFim,
+            @Parameter(description = "Ano de fim do período", required = true)
+            @RequestParam(defaultValue = "2024") int anoFim,
 
-        @Parameter(description = "Id da delegacia", required = false)
-        @RequestParam Long delegaciaId,
+            @Parameter(description = "Id da delegacia", required = false)
+            @RequestParam(required = false) Long delegaciaId,
 
-        @Parameter(description = "Região", required = false)
-        @RequestParam String regiao
+            @Parameter(description = "Região", required = false)
+            @RequestParam(required = false) String regiao
     ) {
         return ResponseEntity.ok(ApiResponseDTO.ok(
-            service.serieHistorica(naturezaId, anoInicio, anoFim, delegaciaId, regiao)
+                service.serieHistorica(naturezaId, anoInicio, anoFim, delegaciaId, regiao)
         ));
     }
 
     // ── GET /v1/ocorrencias/ranking-delegacias ────────────────────────────
     @GetMapping("/ranking-delegacias")
     @Operation(
-        summary = "Ranking de delegacias por ocorrências",
-        description = "Lista as delegacias ordenadas pelo total de ocorrências (descendente)."
+            summary = "Ranking de delegacias por ocorrências",
+            description = "Lista as delegacias ordenadas pelo total de ocorrências (descendente). Pode ser filtrado por uma natureza específica."
     )
     public ResponseEntity<ApiResponseDTO<List<RankingDelegaciaDTO>>> rankingDelegacias(
-        @Parameter(description = "Filtrar por ano específico (opcional)")
-        @RequestParam(required = false) Integer ano
+            @Parameter(description = "Filtrar por ano específico (opcional)")
+            @RequestParam(required = false) Integer ano,
+
+            @Parameter(description = "Filtrar por natureza específica (opcional)")
+            @RequestParam(required = false) Long naturezaId
     ) {
-        return ResponseEntity.ok(ApiResponseDTO.ok(service.rankingDelegacias(ano)));
+        return ResponseEntity.ok(ApiResponseDTO.ok(service.rankingDelegacias(ano, naturezaId)));
+    }
+
+    // ── GET /v1/ocorrencias/totais-por-regiao ──────────────────────────────
+    @GetMapping("/totais-por-regiao")
+    @Operation(
+            summary = "Totais por natureza agrupados por região",
+            description = "Agrupa o total de ocorrências por natureza e região, permitindo comparar regiões lado a lado. Aceita filtro opcional por ano e/ou natureza."
+    )
+    public ResponseEntity<ApiResponseDTO<List<TotalRegiaoDTO>>> totaisPorRegiao(
+            @Parameter(description = "Filtrar por ano específico (opcional)")
+            @RequestParam(required = false) Integer ano,
+
+            @Parameter(description = "Filtrar por natureza específica (opcional)")
+            @RequestParam(required = false) Long naturezaId
+    ) {
+        return ResponseEntity.ok(ApiResponseDTO.ok(service.totalPorRegiao(ano, naturezaId)));
     }
 }

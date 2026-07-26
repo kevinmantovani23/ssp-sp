@@ -14,7 +14,7 @@ import java.util.List;
 @Repository
 public interface OcorrenciaRepository extends JpaRepository<Ocorrencia, Long> {
 
-	 // ocorrências filtradas por ano, natureza e delegacia
+    // ocorrências filtradas por ano, natureza e delegacia
     @Query("""
         SELECT o FROM Ocorrencia o
         JOIN FETCH o.natureza n
@@ -25,10 +25,10 @@ public interface OcorrenciaRepository extends JpaRepository<Ocorrencia, Long> {
         ORDER BY o.data DESC
     """)
     Page<Ocorrencia> findWithFilters(
-        @Param("ano") Integer ano,
-        @Param("naturezaId") Long naturezaId,
-        @Param("delegaciaId") Long delegaciaId,
-        Pageable pageable
+            @Param("ano") Integer ano,
+            @Param("naturezaId") Long naturezaId,
+            @Param("delegaciaId") Long delegaciaId,
+            Pageable pageable
     );
 
     // totais por natureza e ano — grafico de barras
@@ -59,11 +59,11 @@ public interface OcorrenciaRepository extends JpaRepository<Ocorrencia, Long> {
         ORDER BY ano, mes
     """)
     List<Object[]> serieHistorica(
-        @Param("naturezaId") Long naturezaId,
-        @Param("anoInicio") int anoInicio,
-        @Param("anoFim") int anoFim,
-        @Param("delegaciaId") Long delegaciaId,
-        @Param("regiao") String regiao
+            @Param("naturezaId") Long naturezaId,
+            @Param("anoInicio") int anoInicio,
+            @Param("anoFim") int anoFim,
+            @Param("delegaciaId") Long delegaciaId,
+            @Param("regiao") String regiao
     );
 
     @Query("""
@@ -90,17 +90,33 @@ public interface OcorrenciaRepository extends JpaRepository<Ocorrencia, Long> {
         FROM Ocorrencia o
         JOIN o.delegacia d
         WHERE (:ano IS NULL OR FUNCTION('YEAR', o.data) = :ano)
+          AND (:naturezaId IS NULL OR o.natureza.id = :naturezaId)
         GROUP BY d.delegacia, d.regiao
         ORDER BY total DESC
     """)
-    List<Object[]> rankingDelegacias(@Param("ano") Integer ano);
-    
+    List<Object[]> rankingDelegacias(@Param("ano") Integer ano, @Param("naturezaId") Long naturezaId);
+
+    // total por natureza agrupado por região — visão lado a lado das regiões
+    @Query("""
+        SELECT n.natureza AS natureza,
+               d.regiao   AS regiao,
+               SUM(o.quantidade) AS total
+        FROM Ocorrencia o
+        JOIN o.natureza n
+        JOIN o.delegacia d
+        WHERE (:ano IS NULL OR FUNCTION('YEAR', o.data) = :ano)
+          AND (:naturezaId IS NULL OR n.id = :naturezaId)
+        GROUP BY n.natureza, d.regiao
+        ORDER BY d.regiao, total DESC
+    """)
+    List<Object[]> totalPorRegiao(@Param("ano") Integer ano, @Param("naturezaId") Long naturezaId);
+
     //Buscar a ultima data da ocorrencia importada de uma delegacia
     @Query("SELECT MAX(o.data) FROM Ocorrencia o WHERE o.delegacia.id = :delegaciaId")
     LocalDate buscarUltimaDataImportadaPorDelegacia(
             @Param("delegaciaId") Long idDelegacia
     );
-    
+
     // soma total de ocorrências registradas — usado no resumo de estatísticas
     @Query("SELECT COALESCE(SUM(o.quantidade), 0) FROM Ocorrencia o")
     Long somaTotalQuantidade();
@@ -115,7 +131,7 @@ public interface OcorrenciaRepository extends JpaRepository<Ocorrencia, Long> {
 	    GROUP BY MONTH(o.data)
 	    )    
 	        """)
-	Double calcularMediaMensal(
+    Double calcularMediaMensal(
             @Param("tipo") Long natureza,
             @Param("ano") int ano,
             @Param("delegaciaId") Long delegaciaId,
@@ -132,5 +148,5 @@ public interface OcorrenciaRepository extends JpaRepository<Ocorrencia, Long> {
             @Param("naturezaId") Long naturezaId,
             @Param("delegaciaId") Long delegaciaId,
             @Param("regiao") String regiao);
-    
+
 }

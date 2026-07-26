@@ -20,25 +20,25 @@ public class OcorrenciaService {
     public Page<OcorrenciaResponseDTO> listarComFiltros(OcorrenciaFiltroDTO filtro) {
         var pageable = PageRequest.of(filtro.page(), filtro.size());
         return repo.findWithFilters(filtro.ano(), filtro.naturezaId(), filtro.delegaciaId(), pageable)
-            .map(o -> new OcorrenciaResponseDTO(
-                o.getId(),
-                o.getNatureza().getNatureza(),
-                o.getNatureza().getCaracteristica(),
-                o.getDelegacia().getDelegacia(),
-                o.getDelegacia().getRegiao(),
-                o.getQuantidade(),
-                o.getData()
-            ));
+                .map(o -> new OcorrenciaResponseDTO(
+                        o.getId(),
+                        o.getNatureza().getNatureza(),
+                        o.getNatureza().getCaracteristica(),
+                        o.getDelegacia().getDelegacia(),
+                        o.getDelegacia().getRegiao(),
+                        o.getQuantidade(),
+                        o.getData()
+                ));
     }
 
     public List<TotalNaturezaDTO> totalPorNatureza(Integer ano) {
         return repo.totalPorNaturezaEAno(ano).stream()
-            .map(row -> new TotalNaturezaDTO(
-                (String)  row[0],
-                ((Number) row[1]).intValue(),
-                ((Number) row[2]).longValue()
-            ))
-            .toList();
+                .map(row -> new TotalNaturezaDTO(
+                        (String)  row[0],
+                        ((Number) row[1]).intValue(),
+                        ((Number) row[2]).longValue()
+                ))
+                .toList();
     }
 
     public List<SerieHistoricaDTO> serieHistorica(Long naturezaId, int anoInicio, int anoFim, Long delegaciaId, String regiao) {
@@ -49,23 +49,33 @@ public class OcorrenciaService {
         }
 
         return repo.serieHistorica(naturezaId, anoInicio, anoFim, delegaciaId, regiao).stream()
-            .map(row -> new SerieHistoricaDTO(
-                ((Number) row[0]).intValue(),
-                ((Number) row[1]).intValue(),
-                ((Number) row[2]).longValue()
-            ))
-            .toList();
+                .map(row -> new SerieHistoricaDTO(
+                        ((Number) row[0]).intValue(),
+                        ((Number) row[1]).intValue(),
+                        ((Number) row[2]).longValue()
+                ))
+                .toList();
     }
 
-    public List<RankingDelegaciaDTO> rankingDelegacias(Integer ano) {
-        return repo.rankingDelegacias(ano).stream()
-            .map(row -> new RankingDelegaciaDTO(
-                (String)  row[0],
-                (String)  row[1],
-                ((Number) row[2]).longValue()
-            ))
-            .toList();
+    public List<RankingDelegaciaDTO> rankingDelegacias(Integer ano, Long naturezaId) {
+        return repo.rankingDelegacias(ano, naturezaId).stream()
+                .map(row -> new RankingDelegaciaDTO(
+                        (String)  row[0],
+                        (String)  row[1],
+                        ((Number) row[2]).longValue()
+                ))
+                .toList();
     }
-    
-    
+
+    public List<TotalRegiaoDTO> totalPorRegiao(Integer ano, Long naturezaId) {
+        return repo.totalPorRegiao(ano, naturezaId).stream()
+                .map(row -> new TotalRegiaoDTO(
+                        (String)  row[0],
+                        (String)  row[1],
+                        ((Number) row[2]).longValue()
+                ))
+                .toList();
+    }
+
+
 }
