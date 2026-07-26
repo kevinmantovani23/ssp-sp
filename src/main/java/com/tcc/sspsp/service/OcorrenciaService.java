@@ -3,11 +3,15 @@ package com.tcc.sspsp.service;
 import com.tcc.sspsp.dto.*;
 import com.tcc.sspsp.repository.OcorrenciaRepository;
 import com.tcc.sspsp.utils.NormalizaCampos;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -75,6 +79,25 @@ public class OcorrenciaService {
                         ((Number) row[2]).longValue()
                 ))
                 .toList();
+    }
+
+    public CoberturaDadosDTO buscarCobertura() {
+        List<Object[]> periodo = repo.buscarPeriodoGeral();
+        LocalDate dataMin = (LocalDate) periodo.getFirst()[0];
+        LocalDate dataMax = (LocalDate) periodo.getFirst()[1];
+
+        if (dataMin == null || dataMax == null) {
+            throw new EntityNotFoundException("Não há ocorrências registradas na base.");
+        }
+
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM");
+        Long total = repo.somaTotalQuantidade();
+
+        return new CoberturaDadosDTO(
+                YearMonth.from(dataMin).format(fmt),
+                YearMonth.from(dataMax).format(fmt),
+                total
+        );
     }
 
 

@@ -114,4 +114,14 @@ public class OcorrenciaController {
     ) {
         return ResponseEntity.ok(ApiResponseDTO.ok(service.totalPorRegiao(ano, naturezaId)));
     }
+
+    // ── GET /v1/ocorrencias/cobertura ──────────────────────────────────────
+    @GetMapping("/cobertura")
+    @Operation(
+            summary = "Cobertura da base de dados",
+            description = "Informa o primeiro e o último mês com ocorrências disponíveis na base, e o total de ocorrências registradas."
+    )
+    public ResponseEntity<ApiResponseDTO<CoberturaDadosDTO>> cobertura() {
+        return ResponseEntity.ok(ApiResponseDTO.ok(service.buscarCobertura()));
+    }
 }

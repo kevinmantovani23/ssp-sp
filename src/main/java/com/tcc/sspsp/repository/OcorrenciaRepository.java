@@ -121,6 +121,10 @@ public interface OcorrenciaRepository extends JpaRepository<Ocorrencia, Long> {
     @Query("SELECT COALESCE(SUM(o.quantidade), 0) FROM Ocorrencia o")
     Long somaTotalQuantidade();
 
+    // menor e maior data com ocorrência registrada em toda a base — usado pelo endpoint de cobertura
+    @Query("SELECT MIN(o.data), MAX(o.data) FROM Ocorrencia o")
+    List<Object[]> buscarPeriodoGeral();
+
     @Query("""
 	    SELECT AVG(totalMensal) FROM (
 	    SELECT SUM(o.quantidade) as totalMensal    
