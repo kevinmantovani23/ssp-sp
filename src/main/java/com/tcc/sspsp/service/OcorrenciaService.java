@@ -2,6 +2,7 @@ package com.tcc.sspsp.service;
 
 import com.tcc.sspsp.dto.*;
 import com.tcc.sspsp.repository.OcorrenciaRepository;
+import com.tcc.sspsp.utils.NormalizaCampos;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -40,8 +41,14 @@ public class OcorrenciaService {
             .toList();
     }
 
-    public List<SerieHistoricaDTO> serieHistorica(Long naturezaId, int anoInicio, int anoFim) {
-        return repo.serieHistorica(naturezaId, anoInicio, anoFim).stream()
+    public List<SerieHistoricaDTO> serieHistorica(Long naturezaId, int anoInicio, int anoFim, Long delegaciaId, String regiao) {
+        regiao = NormalizaCampos.normalizaRegiao(regiao);
+
+        if(delegaciaId != null && regiao != null){
+            throw new IllegalArgumentException("Não é possível filtrar por Delegacia e Região, utilize apenas um.");
+        }
+
+        return repo.serieHistorica(naturezaId, anoInicio, anoFim, delegaciaId, regiao).stream()
             .map(row -> new SerieHistoricaDTO(
                 ((Number) row[0]).intValue(),
                 ((Number) row[1]).intValue(),

@@ -1,15 +1,23 @@
 package com.tcc.sspsp.service;
 
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import com.tcc.sspsp.dto.MediaOcorrenciasDTO;
+import com.tcc.sspsp.utils.NormalizaCampos;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tcc.sspsp.model.Natureza;
+import com.tcc.sspsp.repository.NaturezaRepository;
 import com.tcc.sspsp.repository.OcorrenciaRepository;
-import com.tcc.sspsp.dto.PrevisaoOcorrenciasDTO;
+import com.tcc.sspsp.dto.PrevisaoResumoDTO;
 import com.tcc.sspsp.dto.TendenciaOcorrenciaDTO;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -17,78 +25,128 @@ import lombok.RequiredArgsConstructor;
 @Transactional(readOnly = true)
 public class EstatisticaService {
 
-	private final OcorrenciaRepository repo;
+	private final OcorrenciaRepository ocorrenciaRepository;
+	private final NaturezaRepository naturezaRepository;
 
-    public Double calcularMediaMensal(String natureza, int ano){
-    	List<Long> totais = repo.buscarTotaisMensais(natureza, ano);
+	public MediaOcorrenciasDTO calcularMediaMensal(Long natureza, int ano, Long delegaciaId, String regiao) {
+		regiao = NormalizaCampos.normalizaRegiao(regiao);
+		Double mediaMensal = ocorrenciaRepository.calcularMediaMensal(natureza, ano, delegaciaId, regiao);
+		return new MediaOcorrenciasDTO(natureza, mediaMensal);
+	}
 
-        return totais.stream()
-                .mapToLong(Long::longValue)
-                .average()
-                .orElse(0.0);
-    }
+	// Regressão Linear de previsão de ocorrências
+	// usando historico de 4 anos
+	public PrevisaoResumoDTO calcularPrevisao(Long naturezaId, Long delegaciaId, String regiao) {
 
-    private List<PrevisaoOcorrenciasDTO> buscarSerieMensal(String natureza, int ano) {
-    	
-        return repo.calcularPrevisao(natureza, ano).stream()
-            .map(row -> new PrevisaoOcorrenciasDTO(
-                ((Number) row[0]).intValue(),
-                ((Number) row[1]).longValue()
-            ))
-            .toList();
-    }
+		if(delegaciaId != null && regiao != null){
+			throw new IllegalArgumentException("Não é possível filtrar por Delegacia e Região, utilize apenas um.");
+		}
 
-        // Regressão Linear de previsão de ocorrencias para o proximo mes (Dados oscilam muito mas ao menos pega uma ideia geral de previsão)
-    public PrevisaoOcorrenciasDTO calcularPrevisao(String natureza, int ano){
-    	
-        List<PrevisaoOcorrenciasDTO> lista = buscarSerieMensal(natureza, ano);
+		regiao = NormalizaCampos.normalizaRegiao(regiao);
 
-        SimpleRegression regression = new SimpleRegression();
-        
-        Integer mes = 1;
+		Natureza naturezaEntity = naturezaRepository.findById(naturezaId)
+				.orElseThrow(() -> new EntityNotFoundException("Natureza não encontrada com id: " + naturezaId));
 
-        for (PrevisaoOcorrenciasDTO o : lista){
-            System.out.println(mes + ", " + o.total());
-            regression.addData(mes, o.total());
-            mes++;
-        
-        }
-        System.out.println(regression.getSlope());
-        Long previsao = (Long)Math.round(regression.predict(mes));
-        return new PrevisaoOcorrenciasDTO(
-            mes,
-            previsao
-        );
-    }
-    //Tendencia de ocorrencias
-    public TendenciaOcorrenciaDTO calcularTendencia(String natureza, int ano) {
-  
-    	List<PrevisaoOcorrenciasDTO> lista = buscarSerieMensal(natureza, ano);
+		List<Object[]> periodoList = ocorrenciaRepository.buscarPeriodoOcorrencia(naturezaId, delegaciaId, regiao);
 
-        SimpleRegression regression = new SimpleRegression();
-        
-        Integer mes = 1;
+		if(periodoList.getFirst()[1] == null){
+			StringBuilder msgErro = new StringBuilder("Não há ocorrências registradas para a natureza de id: " + naturezaId);
+			if(delegaciaId != null){
+				msgErro.append(", delegacia de id: ").append(delegaciaId);
+			}
+			if(regiao != null){
+				msgErro.append(", regiao: ").append(regiao);
+			}
+			throw new EntityNotFoundException(msgErro.toString());
+		}
 
-        for (PrevisaoOcorrenciasDTO o : lista){
-            regression.addData(mes, o.total());
-           // System.out.println(mes + ", " + o.total());
-            mes++;
-        
-        }
-      //  System.out.println(regression.getSlope());
-        Double previsao = regression.getSlope();
-        String tendencia;
-        if (previsao > 0){
-            tendencia = "crescimento";
-        } else if (previsao == 0){
-            tendencia = "estável";
-        } else tendencia = "queda";
+		LocalDate dataMax = (LocalDate) periodoList.getFirst()[1];
 
-        return new TendenciaOcorrenciaDTO(
-            tendencia,
-            previsao
-        );
-        
-    }
-    
+		//Média de 4 anos para cá
+		LocalDate dataMin = dataMax.minusYears(4);
+
+		List<Object[]> serie = ocorrenciaRepository.serieHistorica(naturezaId, dataMin.getYear(), dataMax.getYear(), delegaciaId, regiao);
+
+		SimpleRegression regression = new SimpleRegression();
+		for (Object[] linha : serie) {
+			int ano = ((Number) linha[0]).intValue();
+			int mes = ((Number) linha[1]).intValue();
+			long total = ((Number) linha[2]).longValue();
+			regression.addData(ano * 12 + mes, total);
+		}
+
+		YearMonth ultimoMes = YearMonth.from(dataMax);
+		YearMonth proximoMes = ultimoMes.plusMonths(1);
+		int proximoIndice = proximoMes.getYear() * 12 + proximoMes.getMonthValue();
+
+		Long previsao = Math.round(regression.predict(proximoIndice));
+
+		Double slope = regression.getSlope();
+		String tendencia;
+		if (slope > 0) {
+			tendencia = "CRESCIMENTO";
+		} else if (slope == 0) {
+			tendencia = "ESTAVEL";
+		} else {
+			tendencia = "QUEDA";
+		}
+
+		DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM");
+		String periodoUtilizado = YearMonth.from(dataMin).format(fmt) + " até " + ultimoMes.format(fmt);
+
+		return new PrevisaoResumoDTO(naturezaEntity.getNatureza(), periodoUtilizado, previsao, tendencia);
+	}
+
+	// Tendencia de ocorrencias
+	public TendenciaOcorrenciaDTO calcularTendencia(Long naturezaId, Long delegaciaId, String regiao) {
+
+		if(delegaciaId != null && regiao != null){
+			throw new IllegalArgumentException("Não é possível filtrar por Delegacia e Região, utilize apenas um.");
+		}
+
+		regiao = NormalizaCampos.normalizaRegiao(regiao);
+
+		naturezaRepository.findById(naturezaId)
+				.orElseThrow(() -> new EntityNotFoundException("Natureza não encontrada com id: " + naturezaId));
+
+		List<Object[]> periodoList = ocorrenciaRepository.buscarPeriodoOcorrencia(naturezaId, delegaciaId, regiao);
+
+		if(periodoList.getFirst()[1] == null){
+			StringBuilder msgErro = new StringBuilder("Não há ocorrências registradas para a natureza de id: " + naturezaId);
+			if(delegaciaId != null){
+				msgErro.append(", delegacia de id: ").append(delegaciaId);
+			}
+			if(regiao != null){
+				msgErro.append(", regiao: ").append(regiao);
+			}
+			throw new EntityNotFoundException(msgErro.toString());
+		}
+
+		LocalDate dataMax = (LocalDate) periodoList.getFirst()[1];
+
+		//Média de 4 anos para cá
+		LocalDate dataMin  = dataMax.minusYears(4);
+
+		List<Object[]> serie = ocorrenciaRepository.serieAnual(naturezaId, delegaciaId, regiao, dataMin.getYear(), dataMax.getYear());
+
+		SimpleRegression regression = new SimpleRegression();
+
+		for (Object[] linha : serie) {
+			int ano = ((Number) linha[0]).intValue();
+			long total = ((Number) linha[1]).longValue();
+			regression.addData(ano, total);
+		}
+
+		Double previsao = regression.getSlope();
+		String tendencia;
+		if (previsao > 0) {
+			tendencia = "Crescimento";
+		} else if (previsao == 0) {
+			tendencia = "Estável";
+		} else
+			tendencia = "Queda";
+
+		return new TendenciaOcorrenciaDTO(tendencia, previsao);
+
+	}
 }

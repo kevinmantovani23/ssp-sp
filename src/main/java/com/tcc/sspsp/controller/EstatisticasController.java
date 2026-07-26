@@ -1,17 +1,18 @@
 package com.tcc.sspsp.controller;
 
 
+import com.tcc.sspsp.dto.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tcc.sspsp.dto.MediaOcorrenciasDTO;
-import com.tcc.sspsp.dto.PrevisaoOcorrenciasDTO;
-import com.tcc.sspsp.dto.TendenciaOcorrenciaDTO;
 import com.tcc.sspsp.service.EstatisticaService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
@@ -21,36 +22,63 @@ import lombok.RequiredArgsConstructor;
 @CrossOrigin(origins = "*")
 @Tag(name = "Estatistica", description = "Estatisticas das ocorrências em SSP-SP")
 public class EstatisticasController {
-    private final EstatisticaService service;
+	
+	private final EstatisticaService service;
+	
     //Média mensal de cada tipo de ocorrência
     @GetMapping("/media-mensal")
-    public MediaOcorrenciasDTO MediaMensal(
-        @RequestParam(required = false) String tipo,
-        @RequestParam(required = true) int ano
-    ){
-        
-    Double media = service.calcularMediaMensal(tipo, ano);
-  
-    return new MediaOcorrenciasDTO(tipo, media);
-        }
-    //Previsao das ocorrencias
-        @GetMapping("/previsao")
-    public PrevisaoOcorrenciasDTO PrevisaoOcorrencia(
-        @RequestParam(required = false) String tipo,
-        @RequestParam(required = true) int ano)
+    public ResponseEntity<ApiResponseDTO<MediaOcorrenciasDTO>> MediaMensal(
+        @Parameter(description = "Natureza das ocorrências", required = true)
+        @RequestParam(required = true) Long natureza,
+        @Parameter(description = "Ano das ocorrências", required = true)
+        @RequestParam(required = true) int ano,
+        @Parameter(description = "ID da delegacia da ocorrência", required = false)
+        @RequestParam(required = false) Long delegaciaId,
+        @Parameter(description = "Região da ocorrência", required = false)
+        @RequestParam(required = false) String regiao)
     {
-        PrevisaoOcorrenciasDTO response = service.calcularPrevisao(tipo, ano);
 
-        return response;
+	    return ResponseEntity.ok(ApiResponseDTO.ok(service.calcularMediaMensal(natureza, ano, delegaciaId, regiao)));
     }
+    
+    
+    //Previsao das ocorrencias — calcula automaticamente o próximo mês após o último mês disponível na base
+    @GetMapping("/previsao")
+    @Operation(
+        summary = "Previsão de ocorrências para o próximo mês",
+        description = "Usa o histórico disponível nos últimos 4 anos para prever o mês " +
+                "seguinte, podendo ser filtrado por Natureza, Natureza e Região" +
+                ", Natureza e Delegacia. Delegacia e Região não são permitidas juntas."
+    )
+    public ResponseEntity<ApiResponseDTO<PrevisaoResumoDTO>> PrevisaoOcorrencia(
+        @Parameter(description = "ID da natureza da ocorrência", required = true)
+        @RequestParam Long naturezaId,
+        @Parameter(description = "ID da delegacia da ocorrência", required = false)
+        @RequestParam(required = false) Long delegaciaId,
+        @Parameter(description = "Região da ocorrência", required = false)
+        @RequestParam(required = false) String regiao)
+    {
+        return ResponseEntity.ok(ApiResponseDTO.ok(service.calcularPrevisao(naturezaId, delegaciaId, regiao)));
+    }
+    
+    
     // Tendencia de ocorrencias (Se está subindo, descendo ou estável)
     @GetMapping("/tendencia")
-    public TendenciaOcorrenciaDTO TendenciaOcorrencia(
-           @RequestParam(required = false) String tipo,
-        @RequestParam(required = true) int ano)
+    @Operation(
+            summary = "Tendências de ocorrencias, se está subindo, descendo ou estável",
+            description = "Usa o histórico disponível das ocorrências nos últimos 4 anos," +
+                    " podendo ser filtrado por Natureza, Natureza e Região" +
+                    ", Natureza e Delegacia. Delegacia e Região não são permitidas juntas."
+    )
+    public ResponseEntity<ApiResponseDTO<TendenciaOcorrenciaDTO>> TendenciaOcorrencia(
+        @Parameter(description = "ID da natureza da ocorrência", required = true)
+        @RequestParam Long naturezaId,
+        @Parameter(description = "ID da delegacia da ocorrência", required = false)
+        @RequestParam(required = false) Long delegaciaId,
+        @Parameter(description = "Região da ocorrência", required = false)
+        @RequestParam(required = false) String regiao)
     {
-        TendenciaOcorrenciaDTO response = service.calcularTendencia(tipo, ano);
+        return ResponseEntity.ok(ApiResponseDTO.ok(service.calcularTendencia(naturezaId, delegaciaId, regiao)));
 
-        return response;
     }
 }

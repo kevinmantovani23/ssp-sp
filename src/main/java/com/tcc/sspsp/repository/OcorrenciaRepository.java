@@ -14,7 +14,7 @@ import java.util.List;
 @Repository
 public interface OcorrenciaRepository extends JpaRepository<Ocorrencia, Long> {
 
-    // ocorrências filtradas por ano, natureza e delegacia
+	 // ocorrências filtradas por ano, natureza e delegacia
     @Query("""
         SELECT o FROM Ocorrencia o
         JOIN FETCH o.natureza n
@@ -52,15 +52,35 @@ public interface OcorrenciaRepository extends JpaRepository<Ocorrencia, Long> {
         FROM Ocorrencia o
         JOIN o.natureza n
         WHERE n.id = :naturezaId
-          AND FUNCTION('YEAR', o.data) BETWEEN :anoInicio AND :anoFim
+          AND FUNCTION('YEAR', o.data) BETWEEN :anoInicio AND :anoFim 
+          AND (:delegaciaId IS NULL OR o.delegacia.id = :delegaciaId)
+          AND (:regiao IS NULL OR o.delegacia.regiao LIKE :regiao)
         GROUP BY FUNCTION('YEAR', o.data), FUNCTION('MONTH', o.data)
         ORDER BY ano, mes
     """)
     List<Object[]> serieHistorica(
         @Param("naturezaId") Long naturezaId,
         @Param("anoInicio") int anoInicio,
-        @Param("anoFim") int anoFim
+        @Param("anoFim") int anoFim,
+        @Param("delegaciaId") Long delegaciaId,
+        @Param("regiao") String regiao
     );
+
+    @Query("""
+    SELECT FUNCTION('YEAR', o.data) AS ano,
+           SUM(o.quantidade) AS total
+    FROM Ocorrencia o
+    WHERE o.natureza.id = :naturezaId
+      AND (:delegaciaId IS NULL OR o.delegacia.id = :delegaciaId)
+      AND (:regiao IS NULL OR o.delegacia.regiao LIKE :regiao)
+      AND FUNCTION('YEAR', o.data) BETWEEN :anoInicio AND :anoFim
+    GROUP BY FUNCTION('YEAR', o.data)
+    ORDER BY FUNCTION('YEAR', o.data)
+""")
+    List<Object[]> serieAnual(@Param("naturezaId") Long naturezaId, @Param("delegaciaId") Long delegaciaId,
+                              @Param("regiao") String regiao, @Param("anoInicio") int anoInicio, @Param("anoFim") int anoFim);
+
+
 
     // ranking de delegacias
     @Query("""
@@ -77,28 +97,40 @@ public interface OcorrenciaRepository extends JpaRepository<Ocorrencia, Long> {
     
     //Buscar a ultima data da ocorrencia importada de uma delegacia
     @Query("SELECT MAX(o.data) FROM Ocorrencia o WHERE o.delegacia.id = :delegaciaId")
-    LocalDate buscarUltimaDataImportadaPorDelegacia(@Param("delegaciaId") Long idDelegacia);
+    LocalDate buscarUltimaDataImportadaPorDelegacia(
+            @Param("delegaciaId") Long idDelegacia
+    );
     
     // soma total de ocorrências registradas — usado no resumo de estatísticas
     @Query("SELECT COALESCE(SUM(o.quantidade), 0) FROM Ocorrencia o")
     Long somaTotalQuantidade();
 
     @Query("""
-    	    SELECT SUM(o.quantidade)
-    	    FROM Ocorrencia o
-    	    WHERE o.natureza.id = :tipo
-    	      AND YEAR(o.data) = :ano
-    	    GROUP BY MONTH(o.data)
-    	    ORDER BY MONTH(o.data)
-    	""")
-    List<Long> buscarTotaisMensais(@Param("tipo") String natureza, @Param("ano") int ano);
-	
-	@Query("""
-	   SELECT MONTH(o.data) as mes, SUM(o.quantidade) as total FROM Ocorrencia o
-	   WHERE o.natureza.id = :tipo AND YEAR(o.data) = :ano
-	   GROUP BY  MONTH(o.data)
-	   ORDER BY MONTH(o.data)
+	    SELECT AVG(totalMensal) FROM (
+	    SELECT SUM(o.quantidade) as totalMensal    
+	    FROM Ocorrencia o 
+	    WHERE o.natureza.id = :tipo AND YEAR(o.data) = :ano AND 
+	    (:delegaciaId IS NULL OR o.delegacia.id = :delegaciaId) AND 
+	    (:regiao IS NULL OR o.delegacia.regiao LIKE :regiao)
+	    GROUP BY MONTH(o.data)
+	    )    
 	        """)
-	List<Object[]> calcularPrevisao(@Param("tipo") String natureza, @Param("ano") int ano);
+	Double calcularMediaMensal(
+            @Param("tipo") Long natureza,
+            @Param("ano") int ano,
+            @Param("delegaciaId") Long delegaciaId,
+            @Param("regiao") String regiao);
+
+    // menor e maior data com ocorrência registrada para uma natureza — usado para descobrir automaticamente o período disponível
+    @Query("""
+        SELECT MIN(o.data), MAX(o.data) FROM Ocorrencia o 
+        WHERE o.natureza.id = :naturezaId AND 
+        (:delegaciaId IS NULL or o.delegacia.id = :delegaciaId) AND 
+        (:regiao IS NULL OR o.delegacia.regiao LIKE :regiao)
+                        """)
+    List<Object[]> buscarPeriodoOcorrencia(
+            @Param("naturezaId") Long naturezaId,
+            @Param("delegaciaId") Long delegaciaId,
+            @Param("regiao") String regiao);
     
 }

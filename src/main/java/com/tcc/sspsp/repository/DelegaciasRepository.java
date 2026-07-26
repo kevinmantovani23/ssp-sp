@@ -10,14 +10,13 @@ import java.util.Optional;
  
 @Repository
 public interface DelegaciasRepository extends JpaRepository<Delegacias, Long> {
-    List<Delegacias> findByRegiao(String regiao);
-    
+
     Optional<Delegacias> findByIdSSP(int id);
     
     // delegacias filtradas por região, nome (parcial) e idSSP
     @Query("""
         SELECT d FROM Delegacias d
-        WHERE (:regiao IS NULL OR d.regiao = :regiao)
+        WHERE (:regiao IS NULL OR d.regiao LIKE :regiao)
           AND (:delegacia IS NULL OR UPPER(d.delegacia) LIKE UPPER(CONCAT('%', :delegacia, '%')))
           AND (:idSSP IS NULL OR d.idSSP = :idSSP)
         ORDER BY d.delegacia
@@ -27,5 +26,10 @@ public interface DelegaciasRepository extends JpaRepository<Delegacias, Long> {
         @Param("delegacia") String delegacia,
         @Param("idSSP") Integer idSSP
     );
+
+    @Query("""
+        SELECT DISTINCT d.regiao FROM Delegacias d
+    """)
+    List<String> listarRegioes();
 }
  

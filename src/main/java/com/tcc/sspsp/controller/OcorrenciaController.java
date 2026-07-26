@@ -66,14 +66,20 @@ public class OcorrenciaController {
         @Parameter(description = "ID da natureza", required = true)
         @RequestParam Long naturezaId,
 
-        @Parameter(description = "Ano de início do período")
+        @Parameter(description = "Ano de início do período", required = true)
         @RequestParam(defaultValue = "2020") int anoInicio,
 
-        @Parameter(description = "Ano de fim do período")
-        @RequestParam(defaultValue = "2024") int anoFim
+        @Parameter(description = "Ano de fim do período", required = true)
+        @RequestParam(defaultValue = "2024") int anoFim,
+
+        @Parameter(description = "Id da delegacia", required = false)
+        @RequestParam Long delegaciaId,
+
+        @Parameter(description = "Região", required = false)
+        @RequestParam String regiao
     ) {
         return ResponseEntity.ok(ApiResponseDTO.ok(
-            service.serieHistorica(naturezaId, anoInicio, anoFim)
+            service.serieHistorica(naturezaId, anoInicio, anoFim, delegaciaId, regiao)
         ));
     }
 

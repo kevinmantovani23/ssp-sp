@@ -2,6 +2,7 @@ package com.tcc.sspsp.service;
 
 import com.tcc.sspsp.model.Delegacias;
 import com.tcc.sspsp.repository.DelegaciasRepository;
+import com.tcc.sspsp.utils.NormalizaCampos;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ public class DelegaciasService {
     private final DelegaciasRepository repo;
 
     public List<Delegacias> listarComFiltros(String regiao, String delegacia, Integer idSSP) {
+        regiao = NormalizaCampos.normalizaRegiao(regiao);
         return repo.findWithFilters(regiao, delegacia, idSSP);
     }
 
