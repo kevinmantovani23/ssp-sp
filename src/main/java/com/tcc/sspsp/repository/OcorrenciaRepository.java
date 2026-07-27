@@ -136,7 +136,7 @@ public interface OcorrenciaRepository extends JpaRepository<Ocorrencia, Long> {
 	    )    
 	        """)
     Double calcularMediaMensal(
-            @Param("tipo") Long natureza,
+            @Param("tipo") Long naturezaId,
             @Param("ano") int ano,
             @Param("delegaciaId") Long delegaciaId,
             @Param("regiao") String regiao);

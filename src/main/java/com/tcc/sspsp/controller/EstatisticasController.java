@@ -27,9 +27,14 @@ public class EstatisticasController {
 	
     //Média mensal de cada tipo de ocorrência
     @GetMapping("/media-mensal")
-    public ResponseEntity<ApiResponseDTO<MediaOcorrenciasDTO>> MediaMensal(
+    @Operation(
+            summary = "Média mensal das ocorrências",
+            description = "Calcula  a média mensal das ocorrências em um ano, podendo ser filtrado por Natureza, Natureza e Região" +
+                    ", Natureza e Delegacia. Delegacia e Região não são permitidas juntas."
+    )
+    public ResponseEntity<ApiResponseDTO<MediaOcorrenciasDTO>> mediaMensal(
         @Parameter(description = "Natureza das ocorrências", required = true)
-        @RequestParam(required = true) Long natureza,
+        @RequestParam(required = true) Long naturezaId,
         @Parameter(description = "Ano das ocorrências", required = true)
         @RequestParam(required = true) int ano,
         @Parameter(description = "ID da delegacia da ocorrência", required = false)
@@ -38,7 +43,7 @@ public class EstatisticasController {
         @RequestParam(required = false) String regiao)
     {
 
-	    return ResponseEntity.ok(ApiResponseDTO.ok(service.calcularMediaMensal(natureza, ano, delegaciaId, regiao)));
+	    return ResponseEntity.ok(ApiResponseDTO.ok(service.calcularMediaMensal(naturezaId, ano, delegaciaId, regiao)));
     }
     
     
@@ -50,7 +55,7 @@ public class EstatisticasController {
                 "seguinte, podendo ser filtrado por Natureza, Natureza e Região" +
                 ", Natureza e Delegacia. Delegacia e Região não são permitidas juntas."
     )
-    public ResponseEntity<ApiResponseDTO<PrevisaoResumoDTO>> PrevisaoOcorrencia(
+    public ResponseEntity<ApiResponseDTO<PrevisaoResumoDTO>> previsaoOcorrencia(
         @Parameter(description = "ID da natureza da ocorrência", required = true)
         @RequestParam Long naturezaId,
         @Parameter(description = "ID da delegacia da ocorrência", required = false)
@@ -70,7 +75,7 @@ public class EstatisticasController {
                     " podendo ser filtrado por Natureza, Natureza e Região" +
                     ", Natureza e Delegacia. Delegacia e Região não são permitidas juntas."
     )
-    public ResponseEntity<ApiResponseDTO<TendenciaOcorrenciaDTO>> TendenciaOcorrencia(
+    public ResponseEntity<ApiResponseDTO<TendenciaOcorrenciaDTO>> tendenciaOcorrencia(
         @Parameter(description = "ID da natureza da ocorrência", required = true)
         @RequestParam Long naturezaId,
         @Parameter(description = "ID da delegacia da ocorrência", required = false)

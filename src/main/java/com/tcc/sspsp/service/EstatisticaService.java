@@ -28,10 +28,16 @@ public class EstatisticaService {
 	private final OcorrenciaRepository ocorrenciaRepository;
 	private final NaturezaRepository naturezaRepository;
 
-	public MediaOcorrenciasDTO calcularMediaMensal(Long natureza, int ano, Long delegaciaId, String regiao) {
+	public MediaOcorrenciasDTO calcularMediaMensal(Long naturezaId, int ano, Long delegaciaId, String regiao) {
 		regiao = NormalizaCampos.normalizaRegiao(regiao);
-		Double mediaMensal = ocorrenciaRepository.calcularMediaMensal(natureza, ano, delegaciaId, regiao);
-		return new MediaOcorrenciasDTO(natureza, mediaMensal);
+		if(delegaciaId != null && regiao != null){
+			throw new IllegalArgumentException("Não é possível filtrar por Delegacia e Região, utilize apenas um.");
+		}
+		naturezaRepository.findById(naturezaId)
+				.orElseThrow(() -> new EntityNotFoundException("Natureza não encontrada com id: " + naturezaId));
+
+		Double mediaMensal = ocorrenciaRepository.calcularMediaMensal(naturezaId, ano, delegaciaId, regiao);
+		return new MediaOcorrenciasDTO(naturezaId, mediaMensal);
 	}
 
 	// Regressão Linear de previsão de ocorrências
