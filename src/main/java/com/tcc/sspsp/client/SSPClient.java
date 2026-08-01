@@ -27,6 +27,7 @@ import com.tcc.sspsp.model.Ocorrencia;
 import com.tcc.sspsp.repository.DelegaciasRepository;
 import com.tcc.sspsp.repository.NaturezaRepository;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,9 +37,9 @@ import lombok.extern.slf4j.Slf4j;
 public class SSPClient {
 
     private static final String BASE_URL = "https://www.ssp.sp.gov.br/v1/OcorrenciasMensais/ExportarMensal";
-    private NaturezaRepository naturezaRepository;
-    private DelegaciasRepository delegaciasRepository;
-    private RestTemplate restTemplate;
+    private final NaturezaRepository naturezaRepository;
+    private final DelegaciasRepository delegaciasRepository;
+    private final RestTemplate restTemplate;
 
     public List<Ocorrencia> buscarOcorrencias(List<YearMonth> meses, int idGrupo) {
 
@@ -54,8 +55,8 @@ public class SSPClient {
 
             InputStream excel = baixarExcel(ano, idGrupo);
             // OBS: TESTAR PARA VER SE ELE NÃO ACABA DANDO LIMITE DE REQUISIÇÃO
-            Optional<Delegacias> delegaciaOptional = delegaciasRepository.findByIdSSP(idGrupo);
-            Delegacias delegacia = delegaciaOptional.get();
+            Delegacias delegacia = delegaciasRepository.findByIdSSP(idGrupo)
+                    .orElseThrow(() -> new EntityNotFoundException("Delegacia não encontrada para idSSP: " + idGrupo));
             List<Ocorrencia> dados = tratarExcel(excel, mesesDoAno, delegacia);
 
             resultado.addAll(dados);
