@@ -15,9 +15,11 @@ import com.tcc.sspsp.repository.NaturezaRepository;
 import com.tcc.sspsp.repository.OcorrenciaRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ImportacaoService {
 
 	private final DelegaciasRepository delegaciasRepository;
@@ -80,7 +82,7 @@ public class ImportacaoService {
 
 				ocorrenciaRepository.saveAll(dados);
 			} catch (Exception e) {
-				System.out.println("Erro ao importar dados da delegacia [" + delegacia.getId() + " - " + delegacia.getDelegacia() + "]: " + e.getMessage());
+				log.error("Erro ao importar dados da delegacia [{} - {}]: {}", delegacia.getId(), delegacia.getDelegacia(), e.getMessage(), e);
 			}
 		}
 

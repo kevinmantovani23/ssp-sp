@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.time.YearMonth;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,44 +28,45 @@ import com.tcc.sspsp.repository.DelegaciasRepository;
 import com.tcc.sspsp.repository.NaturezaRepository;
 
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @AllArgsConstructor
+@Slf4j
 public class SSPClient {
 
     private static final String BASE_URL = "https://www.ssp.sp.gov.br/v1/OcorrenciasMensais/ExportarMensal";
     private NaturezaRepository naturezaRepository;
     private DelegaciasRepository delegaciasRepository;
-    
+
     public List<Ocorrencia> buscarOcorrencias(List<YearMonth> meses, int idGrupo) {
 
-    	Map<Integer, List<YearMonth>> mesesPorAno = meses.stream()
-    	        .collect(Collectors.groupingBy(YearMonth::getYear));
+        Map<Integer, List<YearMonth>> mesesPorAno = meses.stream()
+                .collect(Collectors.groupingBy(YearMonth::getYear));
 
-    	    List<Ocorrencia> resultado = new ArrayList<>();
+        List<Ocorrencia> resultado = new ArrayList<>();
 
-    	    for (Map.Entry<Integer, List<YearMonth>> entry : mesesPorAno.entrySet()) {
+        for (Map.Entry<Integer, List<YearMonth>> entry : mesesPorAno.entrySet()) {
 
-    	        Integer ano = entry.getKey();
-    	        List<YearMonth> mesesDoAno = entry.getValue();
+            Integer ano = entry.getKey();
+            List<YearMonth> mesesDoAno = entry.getValue();
 
-    	        InputStream excel = baixarExcel(ano, idGrupo);
-    	        // OBS: TESTAR PARA VER SE ELE NÃO ACABA DANDO LIMITE DE REQUISIÇÃO
-    	        Optional<Delegacias> delegaciaOptional = delegaciasRepository.findByIdSSP(idGrupo);
-    	        Delegacias delegacia = delegaciaOptional.get();
-    	        List<Ocorrencia> dados = tratarExcel(excel, mesesDoAno, delegacia);
+            InputStream excel = baixarExcel(ano, idGrupo);
+            // OBS: TESTAR PARA VER SE ELE NÃO ACABA DANDO LIMITE DE REQUISIÇÃO
+            Optional<Delegacias> delegaciaOptional = delegaciasRepository.findByIdSSP(idGrupo);
+            Delegacias delegacia = delegaciaOptional.get();
+            List<Ocorrencia> dados = tratarExcel(excel, mesesDoAno, delegacia);
 
-    	        resultado.addAll(dados);
-    	    }
+            resultado.addAll(dados);
+        }
 
-    	    return resultado;
+        return resultado;
     }
-    
+
     private List<Ocorrencia> tratarExcel(InputStream inputStream, List<YearMonth> mesesFiltrar, Delegacias delegacia) {
 
-    	List<Ocorrencia> lista = new ArrayList<>();
-    	Map<String, Natureza> cacheNatureza = new HashMap<>();
+        List<Ocorrencia> lista = new ArrayList<>();
+        Map<String, Natureza> cacheNatureza = new HashMap<>();
 
         try (Workbook workbook = WorkbookFactory.create(inputStream)) {
 
@@ -74,10 +74,10 @@ public class SSPClient {
 
             for (Row row : sheet) {
 
-                if (row.getRowNum() == 0) continue; 
+                if (row.getRowNum() == 0) continue;
 
                 String nomeNatureza = getString(row.getCell(0));
-                
+
                 //Buscar a natureza no banco pelo nome aqui, se não existir criar o registro lá.
                 Natureza natureza = buscarOuCriarNatureza(nomeNatureza, cacheNatureza);
 
@@ -86,82 +86,82 @@ public class SSPClient {
                     int mes = i;
 
                     Optional<YearMonth> mesEncontrado = mesesFiltrar.stream()
-                    	    .filter(m -> m.getMonthValue() == mes)
-                    	    .findFirst();
+                            .filter(m -> m.getMonthValue() == mes)
+                            .findFirst();
 
                     if (mesEncontrado.isEmpty()) continue;
-                    
+
                     YearMonth yearMonthAtual = mesEncontrado.get();
-                    
+
                     int quantidade = getInt(row.getCell(i));
 
 
                     Ocorrencia ocorrencia = new Ocorrencia();
-                    
-                   ocorrencia.setData(yearMonthAtual.atDay(1));
-                   ocorrencia.setDelegacia(delegacia);
-                   ocorrencia.setNatureza(natureza);
-                   ocorrencia.setQuantidade(quantidade);
-                   lista.add(ocorrencia);
+
+                    ocorrencia.setData(yearMonthAtual.atDay(1));
+                    ocorrencia.setDelegacia(delegacia);
+                    ocorrencia.setNatureza(natureza);
+                    ocorrencia.setQuantidade(quantidade);
+                    lista.add(ocorrencia);
                 }
             }
 
         } catch (Exception e) {
-        	
-            System.out.println("Erro ao ler Excel: " + e.getMessage());
-            
-        }     
+
+            log.error("Erro ao ler Excel: {}", e.getMessage(), e);
+
+        }
 
         return lista;
     }
-    
+
     private InputStream baixarExcel(int ano, int idGrupo) {
-    	
-    	String url = UriComponentsBuilder.fromUriString(BASE_URL)
-    		        .queryParam("ano", ano)
-    		        .queryParam("grupoDelito", 6)
-    		        .queryParam("tipoGrupo", "DISTRITO")
-    		        .queryParam("idGrupo", idGrupo)
-    		        .toUriString();
-    	 try {
-			Thread.sleep(2000);
-		} catch (InterruptedException e) {
-			
-			e.printStackTrace();
-		}
-    	 
-    	RestTemplate restTemplate = new RestTemplate();
 
-	    ResponseEntity<byte[]> response = restTemplate.exchange(
-	            url,
-	            HttpMethod.GET,
-	            null,
-	            byte[].class
-	    );
+        String url = UriComponentsBuilder.fromUriString(BASE_URL)
+                .queryParam("ano", ano)
+                .queryParam("grupoDelito", 6)
+                .queryParam("tipoGrupo", "DISTRITO")
+                .queryParam("idGrupo", idGrupo)
+                .toUriString();
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
 
-	    if (response.getBody() == null || !response.getStatusCode().is2xxSuccessful()) {
-	        throw new RuntimeException("Erro ao baixar Excel: resposta vazia HTTP CODE: " + response.getStatusCode());
-	    }
-	    
-	    return new ByteArrayInputStream(response.getBody());
+            log.warn("Interrompido durante espera entre requisições ao SSP", e);
+        }
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        ResponseEntity<byte[]> response = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                null,
+                byte[].class
+        );
+
+        if (response.getBody() == null || !response.getStatusCode().is2xxSuccessful()) {
+            throw new RuntimeException("Erro ao baixar Excel: resposta vazia HTTP CODE: " + response.getStatusCode());
+        }
+
+        return new ByteArrayInputStream(response.getBody());
     }
-    
+
     private Natureza buscarOuCriarNatureza(String nome, Map<String, Natureza> cache) {
 
         String nomeNormalizado = nome.trim().toUpperCase();
 
-        
-		return cache.computeIfAbsent(nomeNormalizado, n ->
-            naturezaRepository.findByNatureza(n)
-                .orElseGet(() -> {
-                    Natureza nova = new Natureza();
-                    nova.setNatureza(n);
-                    nova.setCaracteristica("");
-                    return naturezaRepository.save(nova);
-                })
+
+        return cache.computeIfAbsent(nomeNormalizado, n ->
+                naturezaRepository.findByNatureza(n)
+                        .orElseGet(() -> {
+                            Natureza nova = new Natureza();
+                            nova.setNatureza(n);
+                            nova.setCaracteristica("");
+                            return naturezaRepository.save(nova);
+                        })
         );
     }
-    
+
     private String getString(Cell cell) {
         if (cell == null) return null;
 
@@ -171,7 +171,7 @@ public class SSPClient {
             default -> null;
         };
     }
-    
+
     private int getInt(Cell cell) {
         if (cell == null) return 0;
 
@@ -184,5 +184,5 @@ public class SSPClient {
             default -> 0;
         };
     }
-    
+
 }
