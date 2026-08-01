@@ -38,6 +38,7 @@ public class SSPClient {
     private static final String BASE_URL = "https://www.ssp.sp.gov.br/v1/OcorrenciasMensais/ExportarMensal";
     private NaturezaRepository naturezaRepository;
     private DelegaciasRepository delegaciasRepository;
+    private RestTemplate restTemplate;
 
     public List<Ocorrencia> buscarOcorrencias(List<YearMonth> meses, int idGrupo) {
 
@@ -129,8 +130,6 @@ public class SSPClient {
 
             log.warn("Interrompido durante espera entre requisições ao SSP", e);
         }
-
-        RestTemplate restTemplate = new RestTemplate();
 
         ResponseEntity<byte[]> response = restTemplate.exchange(
                 url,
