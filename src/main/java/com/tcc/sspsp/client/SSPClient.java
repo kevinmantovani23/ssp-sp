@@ -18,6 +18,7 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -37,6 +38,9 @@ import lombok.extern.slf4j.Slf4j;
 public class SSPClient {
 
     private static final String BASE_URL = "https://www.ssp.sp.gov.br/v1/OcorrenciasMensais/ExportarMensal";
+    private static final int MAX_TENTATIVAS = 5;
+    private static final long ESPERA_PREVENTIVA_MS = 500;
+    private static final long ESPERA_BASE_BACKOFF_MS = 2000;
     private final NaturezaRepository naturezaRepository;
     private final DelegaciasRepository delegaciasRepository;
     private final RestTemplate restTemplate;
@@ -125,25 +129,55 @@ public class SSPClient {
                 .queryParam("tipoGrupo", "DISTRITO")
                 .queryParam("idGrupo", idGrupo)
                 .toUriString();
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
 
-            log.warn("Interrompido durante espera entre requisições ao SSP", e);
-        }
+        aguardar(ESPERA_PREVENTIVA_MS);
 
-        ResponseEntity<byte[]> response = restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                null,
-                byte[].class
-        );
+        ResponseEntity<byte[]> response = executarComRetry(url);
 
         if (response.getBody() == null || !response.getStatusCode().is2xxSuccessful()) {
             throw new RuntimeException("Erro ao baixar Excel: resposta vazia HTTP CODE: " + response.getStatusCode());
         }
 
         return new ByteArrayInputStream(response.getBody());
+    }
+
+    private ResponseEntity<byte[]> executarComRetry(String url) {
+        int tentativa = 0;
+
+        while (true) {
+            try {
+                return restTemplate.exchange(url, HttpMethod.GET, null, byte[].class);
+            } catch (HttpClientErrorException.TooManyRequests e) {
+                tentativa++;
+                if (tentativa >= MAX_TENTATIVAS) {
+                    throw new RuntimeException("Limite de requisições da SSP excedido após " + MAX_TENTATIVAS + " tentativas", e);
+                }
+
+                long espera = calcularEspera(e, tentativa);
+                log.warn("Rate limit da SSP (429). Tentativa {}/{}, aguardando {}ms", tentativa, MAX_TENTATIVAS, espera);
+                aguardar(espera);
+            }
+        }
+    }
+
+    private long calcularEspera(HttpClientErrorException.TooManyRequests e, int tentativa) {
+        String retryAfter = e.getResponseHeaders() != null ? e.getResponseHeaders().getFirst("Retry-After") : null;
+        if (retryAfter != null) {
+            try {
+                return Long.parseLong(retryAfter) * 1000;
+            } catch (NumberFormatException ne) {
+            }
+        }
+        return ESPERA_BASE_BACKOFF_MS * (1L << (tentativa - 1));
+    }
+
+    private void aguardar(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Importação interrompida durante espera", e);
+        }
     }
 
     private Natureza buscarOuCriarNatureza(String nome, Map<String, Natureza> cache) {
