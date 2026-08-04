@@ -1,5 +1,6 @@
 package com.tcc.sspsp.service;
 
+import static java.util.Objects.isNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -191,8 +192,8 @@ class EstatisticaServiceTest {
 
 		TendenciaOcorrenciaDTO dto = estatisticaService.calcularTendencia(NATUREZA_ID, null, null);
 
-		assertEquals("Queda", dto.tendencia());
-		assertTrue(Double.isNaN(dto.valor()));
+		assertEquals("Indeterminado", dto.tendencia());
+		assertTrue(isNull(dto.valor()));
 	}
 
 	// ---------- exclusão mútua delegacia x região ----------

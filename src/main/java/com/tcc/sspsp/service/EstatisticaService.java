@@ -119,6 +119,10 @@ public class EstatisticaService {
 
 		SimpleRegression regression = new SimpleRegression();
 
+		if (serie.size() < 2){
+			return new TendenciaOcorrenciaDTO("Indeterminado", null);
+		}
+
 		for (Object[] linha : serie) {
 			int ano = ((Number) linha[0]).intValue();
 			long total = ((Number) linha[1]).longValue();

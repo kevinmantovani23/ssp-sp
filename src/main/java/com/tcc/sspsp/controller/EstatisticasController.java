@@ -73,7 +73,8 @@ public class EstatisticasController {
             summary = "Tendências de ocorrencias, se está subindo, descendo ou estável",
             description = "Usa o histórico disponível das ocorrências nos últimos 4 anos," +
                     " podendo ser filtrado por Natureza, Natureza e Região" +
-                    ", Natureza e Delegacia. Delegacia e Região não são permitidas juntas."
+                    ", Natureza e Delegacia. Delegacia e Região não são permitidas juntas." +
+                    " Retorna 'Indeterminado' caso não haja dados suficientes para calcular tendencia."
     )
     public ResponseEntity<ApiResponseDTO<TendenciaOcorrenciaDTO>> tendenciaOcorrencia(
         @Parameter(description = "ID da natureza da ocorrência", required = true)
