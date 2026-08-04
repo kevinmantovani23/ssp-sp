@@ -17,7 +17,6 @@ public class Delegacias {
  
     @Column(nullable = false, length = 100)
     private String delegacia;
- 
     
     @Column(length = 100)
     private String regiao;

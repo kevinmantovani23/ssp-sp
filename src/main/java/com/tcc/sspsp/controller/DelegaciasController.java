@@ -1,7 +1,7 @@
 package com.tcc.sspsp.controller;
 
 import com.tcc.sspsp.dto.ApiResponseDTO;
-import com.tcc.sspsp.model.Delegacias;
+import com.tcc.sspsp.dto.DelegaciasDTO;
 import com.tcc.sspsp.service.DelegaciasService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -26,17 +26,15 @@ public class DelegaciasController {
         summary = "Lista delegacias com filtros opcionais",
         description = "Retorna delegacias filtradas por região, nome e idSSP. Quando mais de um filtro é informado, eles são combinados. Sem filtros, retorna todas as delegacias."
     )
-    public ResponseEntity<ApiResponseDTO<List<Delegacias>>> listar(
+    public ResponseEntity<ApiResponseDTO<List<DelegaciasDTO>>> listar(
         @Parameter(description = "Região da delegacia (ex: Zona Norte)")
         @RequestParam(required = false) String regiao,
 
         @Parameter(description = "Nome (ou parte do nome) da delegacia")
-        @RequestParam(required = false) String delegacia,
+        @RequestParam(required = false) String delegacia
 
-        @Parameter(description = "ID da delegacia na SSP")
-        @RequestParam(required = false) Integer idSSP
     ) {
-        return ResponseEntity.ok(ApiResponseDTO.ok(service.listarComFiltros(regiao, delegacia, idSSP)));
+        return ResponseEntity.ok(ApiResponseDTO.ok(service.listarComFiltros(regiao, delegacia)));
     }
 
     // ── GET /v1/delegacias/{id} ─────────────────────────────────────────────
@@ -45,7 +43,7 @@ public class DelegaciasController {
         summary = "Busca uma delegacia por ID",
         description = "Retorna os dados de uma única delegacia."
     )
-    public ResponseEntity<ApiResponseDTO<Delegacias>> buscarPorId(
+    public ResponseEntity<ApiResponseDTO<DelegaciasDTO>> buscarPorId(
         @Parameter(description = "ID da delegacia", required = true)
         @PathVariable Long id
     ) {

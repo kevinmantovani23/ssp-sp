@@ -1,6 +1,6 @@
 package com.tcc.sspsp.service;
 
-import com.tcc.sspsp.model.Natureza;
+import com.tcc.sspsp.dto.NaturezaDTO;
 import com.tcc.sspsp.repository.NaturezaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,9 +16,9 @@ public class NaturezaService {
 
     private final NaturezaRepository repository;
 
-    public List<Natureza> listarNaturezas(){
+    public List<NaturezaDTO> listarNaturezas(){
 
-        return repository.findAll();
+        return repository.findDTOAll();
 
     }
 }

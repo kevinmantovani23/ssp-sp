@@ -1,5 +1,6 @@
 package com.tcc.sspsp.repository;
  
+import com.tcc.sspsp.dto.DelegaciasDTO;
 import com.tcc.sspsp.model.Delegacias;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -12,19 +13,30 @@ import java.util.Optional;
 public interface DelegaciasRepository extends JpaRepository<Delegacias, Long> {
 
     Optional<Delegacias> findByIdSSP(int id);
-    
-    // delegacias filtradas por região, nome (parcial) e idSSP
+
     @Query("""
-        SELECT d FROM Delegacias d
+    SELECT new com.tcc.sspsp.dto.DelegaciasDTO(
+                d.id,
+                d.delegacia,
+                d.regiao
+            ) FROM Delegacias d
+    WHERE d.id = :id
+    """)
+    Optional<DelegaciasDTO> findDTOById(@Param("id") Long id);
+
+    @Query("""
+        SELECT new com.tcc.sspsp.dto.DelegaciasDTO(
+                d.id,
+                d.delegacia,
+                d.regiao
+            ) FROM Delegacias d
         WHERE (:regiao IS NULL OR d.regiao LIKE :regiao)
           AND (:delegacia IS NULL OR UPPER(d.delegacia) LIKE UPPER(CONCAT('%', :delegacia, '%')))
-          AND (:idSSP IS NULL OR d.idSSP = :idSSP)
         ORDER BY d.delegacia
     """)
-    List<Delegacias> findWithFilters(
+    List<DelegaciasDTO> findWithFilters(
         @Param("regiao") String regiao,
-        @Param("delegacia") String delegacia,
-        @Param("idSSP") Integer idSSP
+        @Param("delegacia") String delegacia
     );
 
     @Query("""

@@ -1,7 +1,7 @@
 package com.tcc.sspsp.controller;
 
 import com.tcc.sspsp.dto.ApiResponseDTO;
-import com.tcc.sspsp.model.Natureza;
+import com.tcc.sspsp.dto.NaturezaDTO;
 import com.tcc.sspsp.service.NaturezaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,7 +21,7 @@ public class NaturezaController {
 
     @GetMapping
     @Operation(summary = "Lista todas as naturezas de ocorrência")
-    public ResponseEntity<ApiResponseDTO<List<Natureza>>> listar() {
+    public ResponseEntity<ApiResponseDTO<List<NaturezaDTO>>> listar() {
 
         return ResponseEntity.ok(ApiResponseDTO.ok(naturezaService.listarNaturezas()));
     }
