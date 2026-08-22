@@ -2,11 +2,15 @@ package com.tcc.sspsp.config.exception;
  
 import com.tcc.sspsp.dto.ApiResponseDTO;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -33,6 +37,24 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponseDTO<Void>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
             .body(ApiResponseDTO.error("Parâmetro '" + ex.getName() + "' com valor inválido: " + ex.getValue()));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponseDTO<Void>> handleValidation(MethodArgumentNotValidException ex) {
+        String mensagem = ex.getBindingResult().getFieldErrors().stream()
+            .map(erro -> erro.getField() + ": " + erro.getDefaultMessage())
+            .collect(Collectors.joining("; "));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(ApiResponseDTO.error(mensagem));
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ApiResponseDTO<Void>> handleConstraintViolation(ConstraintViolationException ex) {
+        String mensagem = ex.getConstraintViolations().stream()
+            .map(violacao -> violacao.getPropertyPath() + ": " + violacao.getMessage())
+            .collect(Collectors.joining("; "));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(ApiResponseDTO.error(mensagem));
     }
 
     @ExceptionHandler(Exception.class)

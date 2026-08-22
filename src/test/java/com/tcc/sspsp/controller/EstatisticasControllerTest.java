@@ -86,6 +86,22 @@ class EstatisticasControllerTest {
 				.andExpect(jsonPath("$.message").value("Parâmetro 'ano' com valor inválido: não-é-um-ano"));
 	}
 
+	@Test
+	void mediaMensal_deveRetornar400_quandoAnoAntesDe2001() throws Exception {
+		mockMvc.perform(get("/v1/estatisticas/media-mensal").param("naturezaId", "1").param("ano", "2000"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.success").value(false))
+				.andExpect(jsonPath("$.message").value("mediaMensal.ano: must be greater than or equal to 2001"));
+	}
+
+	@Test
+	void mediaMensal_deveRetornar400_quandoAnoDepoisDe2100() throws Exception {
+		mockMvc.perform(get("/v1/estatisticas/media-mensal").param("naturezaId", "1").param("ano", "2101"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.success").value(false))
+				.andExpect(jsonPath("$.message").value("mediaMensal.ano: must be less than or equal to 2100"));
+	}
+
 	// ---------- /previsao ----------
 
 	@Test

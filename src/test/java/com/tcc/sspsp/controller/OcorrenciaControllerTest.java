@@ -54,6 +54,22 @@ class OcorrenciaControllerTest {
 				.andExpect(jsonPath("$.data.totalElements").value(1));
 	}
 
+	@Test
+	void listar_deveRetornar400_quandoSizeMaiorQue100() throws Exception {
+		mockMvc.perform(get("/v1/ocorrencias").param("size", "101"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.success").value(false))
+				.andExpect(jsonPath("$.message").value("size: size não pode ser maior que 100"));
+	}
+
+	@Test
+	void listar_deveRetornar400_quandoPageNegativo() throws Exception {
+		mockMvc.perform(get("/v1/ocorrencias").param("page", "-1"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.success").value(false))
+				.andExpect(jsonPath("$.message").value("page: page não pode ser negativo"));
+	}
+
 	// ---------- GET /v1/ocorrencias/totais ----------
 
 	@Test

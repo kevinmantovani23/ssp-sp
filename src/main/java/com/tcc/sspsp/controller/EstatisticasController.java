@@ -14,12 +14,16 @@ import com.tcc.sspsp.service.EstatisticaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 
 @RestController
 @RequestMapping("/v1/estatisticas")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
+@Validated
 @Tag(name = "Estatistica", description = "Estatisticas das ocorrências em SSP-SP")
 public class EstatisticasController {
 	
@@ -36,7 +40,7 @@ public class EstatisticasController {
         @Parameter(description = "Natureza das ocorrências", required = true)
         @RequestParam(required = true) Long naturezaId,
         @Parameter(description = "Ano das ocorrências", required = true)
-        @RequestParam(required = true) int ano,
+        @RequestParam(required = true) @Min(2001) @Max(2100) int ano,
         @Parameter(description = "ID da delegacia da ocorrência", required = false)
         @RequestParam(required = false) Long delegaciaId,
         @Parameter(description = "Região da ocorrência", required = false)

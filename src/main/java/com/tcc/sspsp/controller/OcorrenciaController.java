@@ -5,6 +5,7 @@ import com.tcc.sspsp.service.OcorrenciaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -27,19 +28,8 @@ public class OcorrenciaController {
             description = "Retorna ocorrências filtradas por ano, natureza e delegacia. Suporta paginação."
     )
     public ResponseEntity<ApiResponseDTO<Page<OcorrenciaResponseDTO>>> listar(
-            @Parameter(description = "Ano da ocorrência (ex: 2023)")
-            @RequestParam(required = false) Integer ano,
-
-            @Parameter(description = "ID da natureza da ocorrência")
-            @RequestParam(required = false) Long naturezaId,
-
-            @Parameter(description = "ID da delegacia")
-            @RequestParam(required = false) Long delegaciaId,
-
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size
+            @Valid @ModelAttribute OcorrenciaFiltroDTO filtro
     ) {
-        var filtro = new OcorrenciaFiltroDTO(ano, naturezaId, delegaciaId, page, size);
         return ResponseEntity.ok(ApiResponseDTO.ok(service.listarComFiltros(filtro)));
     }
 
