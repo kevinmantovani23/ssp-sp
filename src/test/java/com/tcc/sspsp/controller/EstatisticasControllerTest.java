@@ -119,11 +119,16 @@ class EstatisticasControllerTest {
 
 	@Test
 	void previsao_deveRetornar400_quandoDelegaciaERegiaoInformadas() throws Exception {
-		when(service.calcularPrevisao(eq(1L), eq(5L), eq("sul")))
-				.thenThrow(new IllegalArgumentException("Não é possível filtrar por Delegacia e Região, utilize apenas um."));
-
 		mockMvc.perform(get("/v1/estatisticas/previsao")
 						.param("naturezaId", "1").param("delegaciaId", "5").param("regiao", "sul"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.success").value(false))
+				.andExpect(jsonPath("$.message").value("Informe delegaciaId ou regiao, não ambos."));
+	}
+
+	@Test
+	void previsao_deveRetornar400_quandoNaturezaIdAusente() throws Exception {
+		mockMvc.perform(get("/v1/estatisticas/previsao"))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.success").value(false));
 	}
@@ -144,11 +149,16 @@ class EstatisticasControllerTest {
 
 	@Test
 	void tendencia_deveRetornar400_quandoDelegaciaERegiaoInformadas() throws Exception {
-		when(service.calcularTendencia(eq(1L), eq(5L), eq("sul")))
-				.thenThrow(new IllegalArgumentException("Não é possível filtrar por Delegacia e Região, utilize apenas um."));
-
 		mockMvc.perform(get("/v1/estatisticas/tendencia")
 						.param("naturezaId", "1").param("delegaciaId", "5").param("regiao", "sul"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.success").value(false))
+				.andExpect(jsonPath("$.message").value("Informe delegaciaId ou regiao, não ambos."));
+	}
+
+	@Test
+	void tendencia_deveRetornar400_quandoNaturezaIdAusente() throws Exception {
+		mockMvc.perform(get("/v1/estatisticas/tendencia"))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.success").value(false));
 	}

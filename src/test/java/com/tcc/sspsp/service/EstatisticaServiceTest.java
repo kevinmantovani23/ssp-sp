@@ -197,29 +197,16 @@ class EstatisticaServiceTest {
 	}
 
 	// ---------- exclusão mútua delegacia x região ----------
+	// calcularPrevisao/calcularTendencia não validam mais isso aqui: a regra
+	// está centralizada em FiltroConsultaDTO, aplicada antes do service ser
+	// chamado (ver EstatisticasControllerTest). calcularMediaMensal não usa
+	// esse DTO (naturezaId obrigatório sozinho + "ano" único), então mantém
+	// sua própria validação.
 
 	@Test
 	void calcularMediaMensal_deveLancarExcecao_quandoDelegaciaERegiaoInformadas() {
 		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
 				() -> estatisticaService.calcularMediaMensal(NATUREZA_ID, 2024, 5L, "sul"));
-
-		assertTrue(ex.getMessage().contains("Delegacia e Região"));
-		verifyNoInteractions(naturezaRepository, ocorrenciaRepository);
-	}
-
-	@Test
-	void calcularPrevisao_deveLancarExcecao_quandoDelegaciaERegiaoInformadas() {
-		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-				() -> estatisticaService.calcularPrevisao(NATUREZA_ID, 5L, "sul"));
-
-		assertTrue(ex.getMessage().contains("Delegacia e Região"));
-		verifyNoInteractions(naturezaRepository, ocorrenciaRepository);
-	}
-
-	@Test
-	void calcularTendencia_deveLancarExcecao_quandoDelegaciaERegiaoInformadas() {
-		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-				() -> estatisticaService.calcularTendencia(NATUREZA_ID, 5L, "sul"));
 
 		assertTrue(ex.getMessage().contains("Delegacia e Região"));
 		verifyNoInteractions(naturezaRepository, ocorrenciaRepository);

@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +29,7 @@ public class OcorrenciaController {
             description = "Retorna ocorrências filtradas por ano, natureza e delegacia. Suporta paginação."
     )
     public ResponseEntity<ApiResponseDTO<Page<OcorrenciaResponseDTO>>> listar(
-            @Valid @ModelAttribute OcorrenciaFiltroDTO filtro
+            @ParameterObject @Valid @ModelAttribute OcorrenciaFiltroDTO filtro
     ) {
         return ResponseEntity.ok(ApiResponseDTO.ok(service.listarComFiltros(filtro)));
     }
@@ -53,23 +54,13 @@ public class OcorrenciaController {
             description = "Retorna a evolução mensal de uma natureza de ocorrência. Ideal para gráficos de linha."
     )
     public ResponseEntity<ApiResponseDTO<List<SerieHistoricaDTO>>> serieHistorica(
-            @Parameter(description = "ID da natureza", required = true)
-            @RequestParam Long naturezaId,
-
-            @Parameter(description = "Ano de início do período", required = true)
-            @RequestParam(defaultValue = "2020") int anoInicio,
-
-            @Parameter(description = "Ano de fim do período", required = true)
-            @RequestParam(defaultValue = "2024") int anoFim,
-
-            @Parameter(description = "Id da delegacia", required = false)
-            @RequestParam(required = false) Long delegaciaId,
-
-            @Parameter(description = "Região", required = false)
-            @RequestParam(required = false) String regiao
+            @ParameterObject @Valid FiltroConsultaDTO filtro
     ) {
+        int anoInicio = filtro.anoInicio() != null ? filtro.anoInicio() : 2020;
+        int anoFim = filtro.anoFim() != null ? filtro.anoFim() : 2024;
+
         return ResponseEntity.ok(ApiResponseDTO.ok(
-                service.serieHistorica(naturezaId, anoInicio, anoFim, delegaciaId, regiao)
+                service.serieHistorica(filtro.naturezaId(), anoInicio, anoFim, filtro.delegaciaId(), filtro.regiao())
         ));
     }
 

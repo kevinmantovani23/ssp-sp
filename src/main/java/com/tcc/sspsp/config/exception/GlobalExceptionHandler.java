@@ -3,6 +3,7 @@ package com.tcc.sspsp.config.exception;
 import com.tcc.sspsp.dto.ApiResponseDTO;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
+import org.springframework.beans.BeanInstantiationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -55,6 +56,20 @@ public class GlobalExceptionHandler {
             .collect(Collectors.joining("; "));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
             .body(ApiResponseDTO.error(mensagem));
+    }
+
+    // DTOs de filtro (records) validam regras de negócio (ex: exclusão mútua de
+    // campos) no construtor compacto. Quando o Spring os instancia via
+    // @ModelAttribute, uma exceção do construtor chega embrulhada aqui.
+    @ExceptionHandler(BeanInstantiationException.class)
+    public ResponseEntity<ApiResponseDTO<Void>> handleBeanInstantiation(BeanInstantiationException ex) {
+        Throwable causa = ex.getMostSpecificCause();
+        if (causa instanceof IllegalArgumentException) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponseDTO.error(causa.getMessage()));
+        }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(ApiResponseDTO.error("Erro interno: " + ex.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)

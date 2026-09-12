@@ -1,6 +1,5 @@
 package com.tcc.sspsp.controller;
 
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -100,14 +99,18 @@ class OcorrenciaControllerTest {
 
 	@Test
 	void serieHistorica_deveRetornar400_quandoDelegaciaERegiaoInformadas() throws Exception {
-		when(service.serieHistorica(eq(1L), eq(2020), eq(2024), eq(5L), eq("sul")))
-				.thenThrow(new IllegalArgumentException("Não é possível filtrar por Delegacia e Região, utilize apenas um."));
-
 		mockMvc.perform(get("/v1/ocorrencias/serie-historica")
 						.param("naturezaId", "1").param("delegaciaId", "5").param("regiao", "sul"))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.success").value(false))
-				.andExpect(jsonPath("$.message").value("Não é possível filtrar por Delegacia e Região, utilize apenas um."));
+				.andExpect(jsonPath("$.message").value("Informe delegaciaId ou regiao, não ambos."));
+	}
+
+	@Test
+	void serieHistorica_deveRetornar400_quandoNaturezaIdAusente() throws Exception {
+		mockMvc.perform(get("/v1/ocorrencias/serie-historica"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.success").value(false));
 	}
 
 	// ---------- GET /v1/ocorrencias/ranking-delegacias ----------

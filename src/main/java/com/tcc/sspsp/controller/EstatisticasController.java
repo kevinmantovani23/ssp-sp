@@ -14,9 +14,11 @@ import com.tcc.sspsp.service.EstatisticaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.validation.annotation.Validated;
 
 @RestController
@@ -60,14 +62,9 @@ public class EstatisticasController {
                 ", Natureza e Delegacia. Delegacia e Região não são permitidas juntas."
     )
     public ResponseEntity<ApiResponseDTO<PrevisaoResumoDTO>> previsaoOcorrencia(
-        @Parameter(description = "ID da natureza da ocorrência", required = true)
-        @RequestParam Long naturezaId,
-        @Parameter(description = "ID da delegacia da ocorrência", required = false)
-        @RequestParam(required = false) Long delegaciaId,
-        @Parameter(description = "Região da ocorrência", required = false)
-        @RequestParam(required = false) String regiao)
+        @ParameterObject @Valid FiltroConsultaDTO filtro)
     {
-        return ResponseEntity.ok(ApiResponseDTO.ok(service.calcularPrevisao(naturezaId, delegaciaId, regiao)));
+        return ResponseEntity.ok(ApiResponseDTO.ok(service.calcularPrevisao(filtro.naturezaId(), filtro.delegaciaId(), filtro.regiao())));
     }
     
     
@@ -81,14 +78,8 @@ public class EstatisticasController {
                     " Retorna 'Indeterminado' caso não haja dados suficientes para calcular tendencia."
     )
     public ResponseEntity<ApiResponseDTO<TendenciaOcorrenciaDTO>> tendenciaOcorrencia(
-        @Parameter(description = "ID da natureza da ocorrência", required = true)
-        @RequestParam Long naturezaId,
-        @Parameter(description = "ID da delegacia da ocorrência", required = false)
-        @RequestParam(required = false) Long delegaciaId,
-        @Parameter(description = "Região da ocorrência", required = false)
-        @RequestParam(required = false) String regiao)
+        @ParameterObject @Valid FiltroConsultaDTO filtro)
     {
-        return ResponseEntity.ok(ApiResponseDTO.ok(service.calcularTendencia(naturezaId, delegaciaId, regiao)));
-
+        return ResponseEntity.ok(ApiResponseDTO.ok(service.calcularTendencia(filtro.naturezaId(), filtro.delegaciaId(), filtro.regiao())));
     }
 }

@@ -41,25 +41,21 @@ public class EstatisticaService {
 
 	private record ContextoAnalise(Natureza natureza, String regiao, LocalDate dataMin, LocalDate dataMax) {}
 
+	// delegaciaId/regiao (exclusão mútua) e a normalização de regiao já
+	// acontecem em FiltroConsultaDTO, antes de chegar aqui.
 	private ContextoAnalise prepararContexto(Long naturezaId, Long delegaciaId, String regiao) {
-		if(delegaciaId != null && regiao != null){
-			throw new IllegalArgumentException("Não é possível filtrar por Delegacia e Região, utilize apenas um.");
-		}
-
-		String regiaoNormalizada = NormalizaCampos.normalizaRegiao(regiao);
-
 		Natureza naturezaEntity = naturezaRepository.findById(naturezaId)
 				.orElseThrow(() -> new EntityNotFoundException("Natureza não encontrada com id: " + naturezaId));
 
-		List<Object[]> periodoList = ocorrenciaRepository.buscarPeriodoOcorrencia(naturezaId, delegaciaId, regiaoNormalizada);
+		List<Object[]> periodoList = ocorrenciaRepository.buscarPeriodoOcorrencia(naturezaId, delegaciaId, regiao);
 
 		if(periodoList.getFirst()[1] == null){
 			StringBuilder msgErro = new StringBuilder("Não há ocorrências registradas para a natureza de id: " + naturezaId);
 			if(delegaciaId != null){
 				msgErro.append(", delegacia de id: ").append(delegaciaId);
 			}
-			if(regiaoNormalizada != null){
-				msgErro.append(", regiao: ").append(regiaoNormalizada);
+			if(regiao != null){
+				msgErro.append(", regiao: ").append(regiao);
 			}
 			throw new EntityNotFoundException(msgErro.toString());
 		}
@@ -69,7 +65,7 @@ public class EstatisticaService {
 		//Média de 4 anos para cá
 		LocalDate dataMin = dataMax.minusYears(4);
 
-		return new ContextoAnalise(naturezaEntity, regiaoNormalizada, dataMin, dataMax);
+		return new ContextoAnalise(naturezaEntity, regiao, dataMin, dataMax);
 	}
 
 	// Regressão Linear de previsão de ocorrências
