@@ -1,4 +1,4 @@
--- V3__seed_delegacias.sql
+-- V2__seed_delegacias.sql
 
 INSERT INTO delegacias(delegacia, idSSP, regiao) VALUES
 ('001 DP - Sé', 1410, 'Centro'),

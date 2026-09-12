@@ -41,7 +41,7 @@ class OcorrenciaControllerTest {
 
 	@Test
 	void listar_deveRetornar200ComEnvelopeDePagina() throws Exception {
-		OcorrenciaResponseDTO ocorrencia = new OcorrenciaResponseDTO(1L, "ROUBO", "violento", "1º DP", "sul", 10, LocalDate.of(2024, 1, 1));
+		OcorrenciaResponseDTO ocorrencia = new OcorrenciaResponseDTO(1L, "ROUBO",  "1º DP", "sul", 10, LocalDate.of(2024, 1, 1));
 		when(service.listarComFiltros(new OcorrenciaFiltroDTO(2024, 1L, null, 0, 20)))
 				.thenReturn(new PageImpl<>(List.of(ocorrencia), PageRequest.of(0, 20), 1));
 

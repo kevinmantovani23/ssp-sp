@@ -27,7 +27,6 @@ public class OcorrenciaService {
                 .map(o -> new OcorrenciaResponseDTO(
                         o.getId(),
                         o.getNatureza().getNatureza(),
-                        o.getNatureza().getCaracteristica(),
                         o.getDelegacia().getDelegacia(),
                         o.getDelegacia().getRegiao(),
                         o.getQuantidade(),
