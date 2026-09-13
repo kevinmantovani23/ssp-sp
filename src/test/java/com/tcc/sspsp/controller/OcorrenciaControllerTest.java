@@ -11,14 +11,13 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.tcc.sspsp.dto.CoberturaDadosDTO;
 import com.tcc.sspsp.dto.OcorrenciaFiltroDTO;
 import com.tcc.sspsp.dto.OcorrenciaResponseDTO;
+import com.tcc.sspsp.dto.PaginaDTO;
 import com.tcc.sspsp.dto.RankingDelegaciaDTO;
 import com.tcc.sspsp.dto.SerieHistoricaDTO;
 import com.tcc.sspsp.dto.TotalNaturezaDTO;
@@ -42,15 +41,15 @@ class OcorrenciaControllerTest {
 	void listar_deveRetornar200ComEnvelopeDePagina() throws Exception {
 		OcorrenciaResponseDTO ocorrencia = new OcorrenciaResponseDTO(1L, "ROUBO",  "1º DP", "sul", 10, LocalDate.of(2024, 1, 1));
 		when(service.listarComFiltros(new OcorrenciaFiltroDTO(2024, 1L, null, 0, 20)))
-				.thenReturn(new PageImpl<>(List.of(ocorrencia), PageRequest.of(0, 20), 1));
+				.thenReturn(new PaginaDTO<>(List.of(ocorrencia), 0, 20, 1, 1, true));
 
 		mockMvc.perform(get("/v1/ocorrencias").param("ano", "2024").param("naturezaId", "1"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.success").value(true))
 				.andExpect(jsonPath("$.message").value("success"))
-				.andExpect(jsonPath("$.data.content[0].id").value(1))
-				.andExpect(jsonPath("$.data.content[0].natureza").value("ROUBO"))
-				.andExpect(jsonPath("$.data.totalElements").value(1));
+				.andExpect(jsonPath("$.data.conteudo[0].id").value(1))
+				.andExpect(jsonPath("$.data.conteudo[0].natureza").value("ROUBO"))
+				.andExpect(jsonPath("$.data.totalElementos").value(1));
 	}
 
 	@Test

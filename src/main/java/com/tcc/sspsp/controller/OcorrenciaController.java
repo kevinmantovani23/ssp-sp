@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -28,7 +27,7 @@ public class OcorrenciaController {
             summary = "Lista ocorrências com filtros e paginação",
             description = "Retorna ocorrências filtradas por ano, natureza e delegacia. Suporta paginação."
     )
-    public ResponseEntity<ApiResponseDTO<Page<OcorrenciaResponseDTO>>> listar(
+    public ResponseEntity<ApiResponseDTO<PaginaDTO<OcorrenciaResponseDTO>>> listar(
             @ParameterObject @Valid @ModelAttribute OcorrenciaFiltroDTO filtro
     ) {
         return ResponseEntity.ok(ApiResponseDTO.ok(service.listarComFiltros(filtro)));

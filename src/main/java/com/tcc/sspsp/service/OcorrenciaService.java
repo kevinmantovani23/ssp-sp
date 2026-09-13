@@ -20,9 +20,9 @@ public class OcorrenciaService {
 
     private final OcorrenciaRepository repo;
 
-    public Page<OcorrenciaResponseDTO> listarComFiltros(OcorrenciaFiltroDTO filtro) {
+    public PaginaDTO<OcorrenciaResponseDTO> listarComFiltros(OcorrenciaFiltroDTO filtro) {
         var pageable = PageRequest.of(filtro.page(), filtro.size());
-        return repo.findWithFilters(filtro.ano(), filtro.naturezaId(), filtro.delegaciaId(), pageable)
+        Page<OcorrenciaResponseDTO> pagina = repo.findWithFilters(filtro.ano(), filtro.naturezaId(), filtro.delegaciaId(), pageable)
                 .map(o -> new OcorrenciaResponseDTO(
                         o.getId(),
                         o.getNatureza().getNatureza(),
@@ -31,6 +31,7 @@ public class OcorrenciaService {
                         o.getQuantidade(),
                         o.getData()
                 ));
+        return PaginaDTO.de(pagina);
     }
 
     public List<TotalNaturezaDTO> totalPorNatureza(Integer ano) {
