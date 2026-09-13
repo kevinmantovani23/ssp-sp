@@ -5,5 +5,9 @@ public record PrevisaoResumoDTO(
 	    String periodoUtilizado,
 	    Long previsao,
 	    String tendencia
-	) {}
+	) {
+	    public static PrevisaoResumoDTO semDados(String natureza) {
+	        return new PrevisaoResumoDTO(natureza, null, null, "Sem dados");
+	    }
+	}
 	 

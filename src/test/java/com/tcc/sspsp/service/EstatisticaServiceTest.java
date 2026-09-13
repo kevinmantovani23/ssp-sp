@@ -17,9 +17,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.tcc.sspsp.dto.FiltroConsultaDTO;
 import com.tcc.sspsp.dto.PrevisaoResumoDTO;
 import com.tcc.sspsp.dto.TendenciaOcorrenciaDTO;
 import com.tcc.sspsp.model.Natureza;
+import com.tcc.sspsp.repository.DelegaciasRepository;
 import com.tcc.sspsp.repository.NaturezaRepository;
 import com.tcc.sspsp.repository.OcorrenciaRepository;
 
@@ -34,6 +36,9 @@ class EstatisticaServiceTest {
 	@Mock
 	private NaturezaRepository naturezaRepository;
 
+	@Mock
+	private DelegaciasRepository delegaciasRepository;
+
 	@InjectMocks
 	private EstatisticaService estatisticaService;
 
@@ -41,6 +46,10 @@ class EstatisticaServiceTest {
 
 	private Natureza natureza() {
 		return Natureza.builder().id(NATUREZA_ID).natureza("ROUBO").build();
+	}
+
+	private FiltroConsultaDTO filtro(Long delegaciaId, String regiao) {
+		return new FiltroConsultaDTO(NATUREZA_ID, delegaciaId, regiao, null, null);
 	}
 
 	private void mockarNaturezaEPeriodo(LocalDate dataMax) {
@@ -63,7 +72,7 @@ class EstatisticaServiceTest {
 				new Object[] { 2024, 5, 140L },
 				new Object[] { 2024, 6, 150L }));
 
-		PrevisaoResumoDTO dto = estatisticaService.calcularPrevisao(NATUREZA_ID, null, null);
+		PrevisaoResumoDTO dto = estatisticaService.calcularPrevisao(filtro(null, null));
 
 		assertEquals("CRESCIMENTO", dto.tendencia());
 		assertEquals(160L, dto.previsao());
@@ -82,7 +91,7 @@ class EstatisticaServiceTest {
 				new Object[] { 2024, 5, 110L },
 				new Object[] { 2024, 6, 100L }));
 
-		PrevisaoResumoDTO dto = estatisticaService.calcularPrevisao(NATUREZA_ID, null, null);
+		PrevisaoResumoDTO dto = estatisticaService.calcularPrevisao(filtro(null, null));
 
 		assertEquals("QUEDA", dto.tendencia());
 		assertEquals(90L, dto.previsao());
@@ -100,7 +109,7 @@ class EstatisticaServiceTest {
 				new Object[] { 2024, 5, 100L },
 				new Object[] { 2024, 6, 100L }));
 
-		PrevisaoResumoDTO dto = estatisticaService.calcularPrevisao(NATUREZA_ID, null, null);
+		PrevisaoResumoDTO dto = estatisticaService.calcularPrevisao(filtro(null, null));
 
 		assertEquals("ESTAVEL", dto.tendencia());
 		assertEquals(100L, dto.previsao());
@@ -115,7 +124,7 @@ class EstatisticaServiceTest {
 
 		// com um único ponto a regressão não tem variância em X: slope = NaN,
 		// e o código cai no ramo "else" (QUEDA) e Math.round(NaN) = 0.
-		PrevisaoResumoDTO dto = estatisticaService.calcularPrevisao(NATUREZA_ID, null, null);
+		PrevisaoResumoDTO dto = estatisticaService.calcularPrevisao(filtro(null, null));
 
 		assertEquals("QUEDA", dto.tendencia());
 		assertEquals(0L, dto.previsao());
@@ -129,11 +138,25 @@ class EstatisticaServiceTest {
 				new Object[] { 2023, 11, 100L },
 				new Object[] { 2023, 12, 110L }));
 
-		PrevisaoResumoDTO dto = estatisticaService.calcularPrevisao(NATUREZA_ID, null, null);
+		PrevisaoResumoDTO dto = estatisticaService.calcularPrevisao(filtro(null, null));
 
 		assertEquals("CRESCIMENTO", dto.tendencia());
 		assertEquals(120L, dto.previsao());
 		assertEquals("2019-12 até 2023-12", dto.periodoUtilizado());
+	}
+
+	@Test
+	void calcularPrevisao_deveRetornarSemDados_quandoNaoHaOcorrencias() {
+		when(naturezaRepository.findById(NATUREZA_ID)).thenReturn(Optional.of(natureza()));
+		when(ocorrenciaRepository.buscarPeriodoOcorrencia(NATUREZA_ID, null, null))
+				.thenReturn(List.<Object[]>of(new Object[] { null, null }));
+
+		PrevisaoResumoDTO dto = estatisticaService.calcularPrevisao(filtro(null, null));
+
+		assertEquals("ROUBO", dto.natureza());
+		assertEquals("Sem dados", dto.tendencia());
+		assertTrue(isNull(dto.previsao()));
+		assertTrue(isNull(dto.periodoUtilizado()));
 	}
 
 	// ---------- calcularTendencia ----------
@@ -147,7 +170,7 @@ class EstatisticaServiceTest {
 				new Object[] { 2022, 110L },
 				new Object[] { 2023, 120L }));
 
-		TendenciaOcorrenciaDTO dto = estatisticaService.calcularTendencia(NATUREZA_ID, null, null);
+		TendenciaOcorrenciaDTO dto = estatisticaService.calcularTendencia(filtro(null, null));
 
 		assertEquals("Crescimento", dto.tendencia());
 		assertEquals(10.0, dto.valor());
@@ -162,7 +185,7 @@ class EstatisticaServiceTest {
 				new Object[] { 2022, 110L },
 				new Object[] { 2023, 100L }));
 
-		TendenciaOcorrenciaDTO dto = estatisticaService.calcularTendencia(NATUREZA_ID, null, null);
+		TendenciaOcorrenciaDTO dto = estatisticaService.calcularTendencia(filtro(null, null));
 
 		assertEquals("Queda", dto.tendencia());
 		assertEquals(-10.0, dto.valor());
@@ -177,7 +200,7 @@ class EstatisticaServiceTest {
 				new Object[] { 2022, 100L },
 				new Object[] { 2023, 100L }));
 
-		TendenciaOcorrenciaDTO dto = estatisticaService.calcularTendencia(NATUREZA_ID, null, null);
+		TendenciaOcorrenciaDTO dto = estatisticaService.calcularTendencia(filtro(null, null));
 
 		assertEquals("Estável", dto.tendencia());
 		assertEquals(0.0, dto.valor());
@@ -190,9 +213,21 @@ class EstatisticaServiceTest {
 		when(ocorrenciaRepository.serieAnual(NATUREZA_ID, null, null, 2019, 2023))
 				.thenReturn(List.<Object[]>of(new Object[] { 2023, 100L }));
 
-		TendenciaOcorrenciaDTO dto = estatisticaService.calcularTendencia(NATUREZA_ID, null, null);
+		TendenciaOcorrenciaDTO dto = estatisticaService.calcularTendencia(filtro(null, null));
 
 		assertEquals("Indeterminado", dto.tendencia());
+		assertTrue(isNull(dto.valor()));
+	}
+
+	@Test
+	void calcularTendencia_deveRetornarSemDados_quandoNaoHaOcorrencias() {
+		when(naturezaRepository.findById(NATUREZA_ID)).thenReturn(Optional.of(natureza()));
+		when(ocorrenciaRepository.buscarPeriodoOcorrencia(NATUREZA_ID, null, null))
+				.thenReturn(List.<Object[]>of(new Object[] { null, null }));
+
+		TendenciaOcorrenciaDTO dto = estatisticaService.calcularTendencia(filtro(null, null));
+
+		assertEquals("Sem dados", dto.tendencia());
 		assertTrue(isNull(dto.valor()));
 	}
 
@@ -209,7 +244,7 @@ class EstatisticaServiceTest {
 				() -> estatisticaService.calcularMediaMensal(NATUREZA_ID, 2024, 5L, "sul"));
 
 		assertTrue(ex.getMessage().contains("Delegacia e Região"));
-		verifyNoInteractions(naturezaRepository, ocorrenciaRepository);
+		verifyNoInteractions(naturezaRepository, ocorrenciaRepository, delegaciasRepository);
 	}
 
 	// ---------- natureza inexistente ----------
@@ -229,20 +264,32 @@ class EstatisticaServiceTest {
 		when(naturezaRepository.findById(NATUREZA_ID)).thenReturn(Optional.empty());
 
 		EntityNotFoundException ex = assertThrows(EntityNotFoundException.class,
-				() -> estatisticaService.calcularPrevisao(NATUREZA_ID, null, null));
+				() -> estatisticaService.calcularPrevisao(filtro(null, null)));
 
 		assertTrue(ex.getMessage().contains("Natureza não encontrada"));
 	}
 
+	// ---------- delegacia inexistente ----------
+
 	@Test
-	void calcularPrevisao_deveLancarEntityNotFoundException_quandoNaoHaOcorrencias() {
+	void calcularMediaMensal_deveLancarEntityNotFoundException_quandoDelegaciaNaoExiste() {
 		when(naturezaRepository.findById(NATUREZA_ID)).thenReturn(Optional.of(natureza()));
-		when(ocorrenciaRepository.buscarPeriodoOcorrencia(NATUREZA_ID, null, null))
-				.thenReturn(List.<Object[]>of(new Object[] { null, null }));
+		when(delegaciasRepository.existsById(5L)).thenReturn(false);
 
 		EntityNotFoundException ex = assertThrows(EntityNotFoundException.class,
-				() -> estatisticaService.calcularPrevisao(NATUREZA_ID, null, null));
+				() -> estatisticaService.calcularMediaMensal(NATUREZA_ID, 2024, 5L, null));
 
-		assertTrue(ex.getMessage().contains("Não há ocorrências registradas"));
+		assertTrue(ex.getMessage().contains("Delegacia não encontrada"));
+	}
+
+	@Test
+	void calcularPrevisao_deveLancarEntityNotFoundException_quandoDelegaciaNaoExiste() {
+		when(naturezaRepository.findById(NATUREZA_ID)).thenReturn(Optional.of(natureza()));
+		when(delegaciasRepository.existsById(5L)).thenReturn(false);
+
+		EntityNotFoundException ex = assertThrows(EntityNotFoundException.class,
+				() -> estatisticaService.calcularPrevisao(filtro(5L, null)));
+
+		assertTrue(ex.getMessage().contains("Delegacia não encontrada"));
 	}
 }

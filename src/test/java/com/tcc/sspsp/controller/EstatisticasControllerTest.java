@@ -14,6 +14,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.tcc.sspsp.dto.FiltroConsultaDTO;
 import com.tcc.sspsp.dto.MediaOcorrenciasDTO;
 import com.tcc.sspsp.dto.PrevisaoResumoDTO;
 import com.tcc.sspsp.dto.TendenciaOcorrenciaDTO;
@@ -106,7 +107,7 @@ class EstatisticasControllerTest {
 
 	@Test
 	void previsao_deveRetornar200ComEnvelope() throws Exception {
-		when(service.calcularPrevisao(1L, null, null))
+		when(service.calcularPrevisao(new FiltroConsultaDTO(1L, null, null, null, null)))
 				.thenReturn(new PrevisaoResumoDTO("ROUBO", "2020-06 até 2024-06", 160L, "CRESCIMENTO"));
 
 		mockMvc.perform(get("/v1/estatisticas/previsao").param("naturezaId", "1"))
@@ -115,6 +116,30 @@ class EstatisticasControllerTest {
 				.andExpect(jsonPath("$.data.natureza").value("ROUBO"))
 				.andExpect(jsonPath("$.data.previsao").value(160))
 				.andExpect(jsonPath("$.data.tendencia").value("CRESCIMENTO"));
+	}
+
+	@Test
+	void previsao_deveRetornar200ComSemDados_quandoNaoHaOcorrencias() throws Exception {
+		when(service.calcularPrevisao(new FiltroConsultaDTO(1L, null, null, null, null)))
+				.thenReturn(PrevisaoResumoDTO.semDados("ROUBO"));
+
+		mockMvc.perform(get("/v1/estatisticas/previsao").param("naturezaId", "1"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.success").value(true))
+				.andExpect(jsonPath("$.data.natureza").value("ROUBO"))
+				.andExpect(jsonPath("$.data.tendencia").value("Sem dados"))
+				.andExpect(jsonPath("$.data.previsao").doesNotExist());
+	}
+
+	@Test
+	void previsao_deveRetornar404_quandoDelegaciaNaoEncontrada() throws Exception {
+		when(service.calcularPrevisao(new FiltroConsultaDTO(1L, 5L, null, null, null)))
+				.thenThrow(new EntityNotFoundException("Delegacia não encontrada com id: 5"));
+
+		mockMvc.perform(get("/v1/estatisticas/previsao").param("naturezaId", "1").param("delegaciaId", "5"))
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath("$.success").value(false))
+				.andExpect(jsonPath("$.message").value("Delegacia não encontrada com id: 5"));
 	}
 
 	@Test
@@ -137,7 +162,7 @@ class EstatisticasControllerTest {
 
 	@Test
 	void tendencia_deveRetornar200ComEnvelope() throws Exception {
-		when(service.calcularTendencia(1L, null, null))
+		when(service.calcularTendencia(new FiltroConsultaDTO(1L, null, null, null, null)))
 				.thenReturn(new TendenciaOcorrenciaDTO("Crescimento", 10.0));
 
 		mockMvc.perform(get("/v1/estatisticas/tendencia").param("naturezaId", "1"))
@@ -145,6 +170,29 @@ class EstatisticasControllerTest {
 				.andExpect(jsonPath("$.success").value(true))
 				.andExpect(jsonPath("$.data.tendencia").value("Crescimento"))
 				.andExpect(jsonPath("$.data.valor").value(10.0));
+	}
+
+	@Test
+	void tendencia_deveRetornar200ComSemDados_quandoNaoHaOcorrencias() throws Exception {
+		when(service.calcularTendencia(new FiltroConsultaDTO(1L, null, null, null, null)))
+				.thenReturn(TendenciaOcorrenciaDTO.semDados());
+
+		mockMvc.perform(get("/v1/estatisticas/tendencia").param("naturezaId", "1"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.success").value(true))
+				.andExpect(jsonPath("$.data.tendencia").value("Sem dados"))
+				.andExpect(jsonPath("$.data.valor").doesNotExist());
+	}
+
+	@Test
+	void tendencia_deveRetornar404_quandoDelegaciaNaoEncontrada() throws Exception {
+		when(service.calcularTendencia(new FiltroConsultaDTO(1L, 5L, null, null, null)))
+				.thenThrow(new EntityNotFoundException("Delegacia não encontrada com id: 5"));
+
+		mockMvc.perform(get("/v1/estatisticas/tendencia").param("naturezaId", "1").param("delegaciaId", "5"))
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath("$.success").value(false))
+				.andExpect(jsonPath("$.message").value("Delegacia não encontrada com id: 5"));
 	}
 
 	@Test

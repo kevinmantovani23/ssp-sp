@@ -5,4 +5,8 @@ public record TendenciaOcorrenciaDTO(
     Double valor
 )
 
-{}
+{
+    public static TendenciaOcorrenciaDTO semDados() {
+        return new TendenciaOcorrenciaDTO("Sem dados", null);
+    }
+}

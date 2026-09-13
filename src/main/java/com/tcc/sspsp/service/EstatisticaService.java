@@ -4,8 +4,11 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 
+import com.tcc.sspsp.dto.FiltroConsultaDTO;
 import com.tcc.sspsp.dto.MediaOcorrenciasDTO;
+import com.tcc.sspsp.repository.DelegaciasRepository;
 import com.tcc.sspsp.utils.NormalizaCampos;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.springframework.stereotype.Service;
@@ -27,6 +30,7 @@ public class EstatisticaService {
 
 	private final OcorrenciaRepository ocorrenciaRepository;
 	private final NaturezaRepository naturezaRepository;
+	private final DelegaciasRepository delegaciasRepository;
 
 	public MediaOcorrenciasDTO calcularMediaMensal(Long naturezaId, int ano, Long delegaciaId, String regiao) {
 		regiao = NormalizaCampos.normalizaRegiao(regiao);
@@ -35,29 +39,31 @@ public class EstatisticaService {
 		}
 		naturezaRepository.findById(naturezaId)
 				.orElseThrow(() -> new EntityNotFoundException("Natureza não encontrada com id: " + naturezaId));
+		validarDelegaciaExiste(delegaciaId);
 		Double mediaMensal = ocorrenciaRepository.calcularMediaMensal(naturezaId, ano, delegaciaId, regiao);
 		return new MediaOcorrenciasDTO(naturezaId, mediaMensal);
 	}
 
+	private void validarDelegaciaExiste(Long delegaciaId) {
+		if (delegaciaId == null) return;
+		if (!delegaciasRepository.existsById(delegaciaId)) {
+			throw new EntityNotFoundException("Delegacia não encontrada com id: " + delegaciaId);
+		}
+	}
+
 	private record ContextoAnalise(Natureza natureza, String regiao, LocalDate dataMin, LocalDate dataMax) {}
 
-	// delegaciaId/regiao (exclusão mútua) e a normalização de regiao já
-	// acontecem em FiltroConsultaDTO, antes de chegar aqui.
-	private ContextoAnalise prepararContexto(Long naturezaId, Long delegaciaId, String regiao) {
-		Natureza naturezaEntity = naturezaRepository.findById(naturezaId)
-				.orElseThrow(() -> new EntityNotFoundException("Natureza não encontrada com id: " + naturezaId));
 
-		List<Object[]> periodoList = ocorrenciaRepository.buscarPeriodoOcorrencia(naturezaId, delegaciaId, regiao);
+	private Optional<ContextoAnalise> prepararContexto(FiltroConsultaDTO filtro) {
+		Natureza naturezaEntity = naturezaRepository.findById(filtro.naturezaId())
+				.orElseThrow(() -> new EntityNotFoundException("Natureza não encontrada com id: " + filtro.naturezaId()));
+
+		validarDelegaciaExiste(filtro.delegaciaId());
+
+		List<Object[]> periodoList = ocorrenciaRepository.buscarPeriodoOcorrencia(filtro.naturezaId(), filtro.delegaciaId(), filtro.regiao());
 
 		if(periodoList.getFirst()[1] == null){
-			StringBuilder msgErro = new StringBuilder("Não há ocorrências registradas para a natureza de id: " + naturezaId);
-			if(delegaciaId != null){
-				msgErro.append(", delegacia de id: ").append(delegaciaId);
-			}
-			if(regiao != null){
-				msgErro.append(", regiao: ").append(regiao);
-			}
-			throw new EntityNotFoundException(msgErro.toString());
+			return Optional.empty();
 		}
 
 		LocalDate dataMax = (LocalDate) periodoList.getFirst()[1];
@@ -65,16 +71,20 @@ public class EstatisticaService {
 		//Média de 4 anos para cá
 		LocalDate dataMin = dataMax.minusYears(4);
 
-		return new ContextoAnalise(naturezaEntity, regiao, dataMin, dataMax);
+		return Optional.of(new ContextoAnalise(naturezaEntity, filtro.regiao(), dataMin, dataMax));
 	}
 
 	// Regressão Linear de previsão de ocorrências
 	// usando historico de 4 anos
-	public PrevisaoResumoDTO calcularPrevisao(Long naturezaId, Long delegaciaId, String regiao) {
+	public PrevisaoResumoDTO calcularPrevisao(FiltroConsultaDTO filtro) {
 
-		ContextoAnalise ctx = prepararContexto(naturezaId, delegaciaId, regiao);
+		Optional<ContextoAnalise> contexto = prepararContexto(filtro);
+		if (contexto.isEmpty()) {
+			return PrevisaoResumoDTO.semDados(nomeNatureza(filtro.naturezaId()));
+		}
+		ContextoAnalise ctx = contexto.get();
 
-		List<Object[]> serie = ocorrenciaRepository.serieHistorica(naturezaId, ctx.dataMin().getYear(), ctx.dataMax().getYear(), delegaciaId, ctx.regiao());
+		List<Object[]> serie = ocorrenciaRepository.serieHistorica(filtro.naturezaId(), ctx.dataMin().getYear(), ctx.dataMax().getYear(), filtro.delegaciaId(), ctx.regiao());
 
 		SimpleRegression regression = new SimpleRegression();
 		for (Object[] linha : serie) {
@@ -107,11 +117,15 @@ public class EstatisticaService {
 	}
 
 	// Tendencia de ocorrencias
-	public TendenciaOcorrenciaDTO calcularTendencia(Long naturezaId, Long delegaciaId, String regiao) {
+	public TendenciaOcorrenciaDTO calcularTendencia(FiltroConsultaDTO filtro) {
 
-		ContextoAnalise ctx = prepararContexto(naturezaId, delegaciaId, regiao);
+		Optional<ContextoAnalise> contexto = prepararContexto(filtro);
+		if (contexto.isEmpty()) {
+			return TendenciaOcorrenciaDTO.semDados();
+		}
+		ContextoAnalise ctx = contexto.get();
 
-		List<Object[]> serie = ocorrenciaRepository.serieAnual(naturezaId, delegaciaId, ctx.regiao(), ctx.dataMin().getYear(), ctx.dataMax().getYear());
+		List<Object[]> serie = ocorrenciaRepository.serieAnual(filtro.naturezaId(), filtro.delegaciaId(), ctx.regiao(), ctx.dataMin().getYear(), ctx.dataMax().getYear());
 
 		SimpleRegression regression = new SimpleRegression();
 
@@ -136,5 +150,11 @@ public class EstatisticaService {
 
 		return new TendenciaOcorrenciaDTO(tendencia, previsao);
 
+	}
+
+	private String nomeNatureza(Long naturezaId) {
+		return naturezaRepository.findById(naturezaId)
+				.map(Natureza::getNatureza)
+				.orElseThrow(() -> new EntityNotFoundException("Natureza não encontrada com id: " + naturezaId));
 	}
 }

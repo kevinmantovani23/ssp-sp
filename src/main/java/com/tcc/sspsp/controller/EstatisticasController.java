@@ -64,7 +64,7 @@ public class EstatisticasController {
     public ResponseEntity<ApiResponseDTO<PrevisaoResumoDTO>> previsaoOcorrencia(
         @ParameterObject @Valid FiltroConsultaDTO filtro)
     {
-        return ResponseEntity.ok(ApiResponseDTO.ok(service.calcularPrevisao(filtro.naturezaId(), filtro.delegaciaId(), filtro.regiao())));
+        return ResponseEntity.ok(ApiResponseDTO.ok(service.calcularPrevisao(filtro)));
     }
     
     
@@ -80,6 +80,6 @@ public class EstatisticasController {
     public ResponseEntity<ApiResponseDTO<TendenciaOcorrenciaDTO>> tendenciaOcorrencia(
         @ParameterObject @Valid FiltroConsultaDTO filtro)
     {
-        return ResponseEntity.ok(ApiResponseDTO.ok(service.calcularTendencia(filtro.naturezaId(), filtro.delegaciaId(), filtro.regiao())));
+        return ResponseEntity.ok(ApiResponseDTO.ok(service.calcularTendencia(filtro)));
     }
 }
