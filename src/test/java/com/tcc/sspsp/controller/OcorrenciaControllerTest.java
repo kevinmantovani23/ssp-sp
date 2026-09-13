@@ -57,6 +57,7 @@ class OcorrenciaControllerTest {
 		mockMvc.perform(get("/v1/ocorrencias").param("size", "101"))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.success").value(false))
+				.andExpect(jsonPath("$.codigo").value("VALIDACAO"))
 				.andExpect(jsonPath("$.message").value("size: size não pode ser maior que 100"));
 	}
 
@@ -65,6 +66,7 @@ class OcorrenciaControllerTest {
 		mockMvc.perform(get("/v1/ocorrencias").param("page", "-1"))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.success").value(false))
+				.andExpect(jsonPath("$.codigo").value("VALIDACAO"))
 				.andExpect(jsonPath("$.message").value("page: page não pode ser negativo"));
 	}
 
@@ -102,6 +104,7 @@ class OcorrenciaControllerTest {
 						.param("naturezaId", "1").param("delegaciaId", "5").param("regiao", "sul"))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.success").value(false))
+				.andExpect(jsonPath("$.codigo").value("PARAMETRO_INVALIDO"))
 				.andExpect(jsonPath("$.message").value("Informe delegaciaId ou regiao, não ambos."));
 	}
 
@@ -109,7 +112,8 @@ class OcorrenciaControllerTest {
 	void serieHistorica_deveRetornar400_quandoNaturezaIdAusente() throws Exception {
 		mockMvc.perform(get("/v1/ocorrencias/serie-historica"))
 				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath("$.success").value(false));
+				.andExpect(jsonPath("$.success").value(false))
+				.andExpect(jsonPath("$.codigo").value("VALIDACAO"));
 	}
 
 	// ---------- GET /v1/ocorrencias/ranking-delegacias ----------
@@ -158,6 +162,7 @@ class OcorrenciaControllerTest {
 		mockMvc.perform(get("/v1/ocorrencias/cobertura"))
 				.andExpect(status().isNotFound())
 				.andExpect(jsonPath("$.success").value(false))
+				.andExpect(jsonPath("$.codigo").value("RECURSO_NAO_ENCONTRADO"))
 				.andExpect(jsonPath("$.message").value("Não há ocorrências registradas na base."));
 	}
 }

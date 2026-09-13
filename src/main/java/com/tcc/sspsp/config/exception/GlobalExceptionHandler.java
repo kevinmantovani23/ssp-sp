@@ -1,5 +1,5 @@
 package com.tcc.sspsp.config.exception;
- 
+
 import com.tcc.sspsp.dto.ApiResponseDTO;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
@@ -19,25 +19,25 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ApiResponseDTO<Void>> handleNotFound(EntityNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-            .body(ApiResponseDTO.error(ex.getMessage()));
+            .body(ApiResponseDTO.error("RECURSO_NAO_ENCONTRADO", ex.getMessage()));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiResponseDTO<Void>> handleBadRequest(IllegalArgumentException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .body(ApiResponseDTO.error(ex.getMessage()));
+            .body(ApiResponseDTO.error("PARAMETRO_INVALIDO", ex.getMessage()));
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<ApiResponseDTO<Void>> handleMissingParam(MissingServletRequestParameterException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .body(ApiResponseDTO.error("Parâmetro obrigatório ausente: " + ex.getParameterName()));
+            .body(ApiResponseDTO.error("PARAMETRO_AUSENTE", "Parâmetro obrigatório ausente: " + ex.getParameterName()));
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiResponseDTO<Void>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .body(ApiResponseDTO.error("Parâmetro '" + ex.getName() + "' com valor inválido: " + ex.getValue()));
+            .body(ApiResponseDTO.error("TIPO_INVALIDO", "Parâmetro '" + ex.getName() + "' com valor inválido: " + ex.getValue()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -46,7 +46,7 @@ public class GlobalExceptionHandler {
             .map(erro -> erro.getField() + ": " + erro.getDefaultMessage())
             .collect(Collectors.joining("; "));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .body(ApiResponseDTO.error(mensagem));
+            .body(ApiResponseDTO.error("VALIDACAO", mensagem));
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
@@ -55,7 +55,7 @@ public class GlobalExceptionHandler {
             .map(violacao -> violacao.getPropertyPath() + ": " + violacao.getMessage())
             .collect(Collectors.joining("; "));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .body(ApiResponseDTO.error(mensagem));
+            .body(ApiResponseDTO.error("VALIDACAO", mensagem));
     }
 
     // DTOs de filtro (records) validam regras de negócio (ex: exclusão mútua de
@@ -66,15 +66,15 @@ public class GlobalExceptionHandler {
         Throwable causa = ex.getMostSpecificCause();
         if (causa instanceof IllegalArgumentException) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponseDTO.error(causa.getMessage()));
+                .body(ApiResponseDTO.error("PARAMETRO_INVALIDO", causa.getMessage()));
         }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(ApiResponseDTO.error("Erro interno: " + ex.getMessage()));
+            .body(ApiResponseDTO.error("ERRO_INTERNO", "Erro interno: " + ex.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponseDTO<Void>> handleGeneral(Exception ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(ApiResponseDTO.error("Erro interno: " + ex.getMessage()));
+            .body(ApiResponseDTO.error("ERRO_INTERNO", "Erro interno: " + ex.getMessage()));
     }
 }

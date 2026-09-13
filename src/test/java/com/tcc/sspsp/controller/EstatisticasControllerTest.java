@@ -56,6 +56,7 @@ class EstatisticasControllerTest {
 						.param("naturezaId", "1").param("ano", "2024").param("delegaciaId", "5").param("regiao", "sul"))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.success").value(false))
+				.andExpect(jsonPath("$.codigo").value("PARAMETRO_INVALIDO"))
 				.andExpect(jsonPath("$.message").value("Não é possível filtrar por Delegacia e Região, utilize apenas um."))
 				.andExpect(jsonPath("$.data").doesNotExist());
 	}
@@ -68,6 +69,7 @@ class EstatisticasControllerTest {
 		mockMvc.perform(get("/v1/estatisticas/media-mensal").param("naturezaId", "99").param("ano", "2024"))
 				.andExpect(status().isNotFound())
 				.andExpect(jsonPath("$.success").value(false))
+				.andExpect(jsonPath("$.codigo").value("RECURSO_NAO_ENCONTRADO"))
 				.andExpect(jsonPath("$.message").value("Natureza não encontrada com id: 99"));
 	}
 
@@ -76,6 +78,7 @@ class EstatisticasControllerTest {
 		mockMvc.perform(get("/v1/estatisticas/media-mensal").param("ano", "2024"))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.success").value(false))
+				.andExpect(jsonPath("$.codigo").value("PARAMETRO_AUSENTE"))
 				.andExpect(jsonPath("$.message").value("Parâmetro obrigatório ausente: naturezaId"));
 	}
 
@@ -84,6 +87,7 @@ class EstatisticasControllerTest {
 		mockMvc.perform(get("/v1/estatisticas/media-mensal").param("naturezaId", "1").param("ano", "não-é-um-ano"))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.success").value(false))
+				.andExpect(jsonPath("$.codigo").value("TIPO_INVALIDO"))
 				.andExpect(jsonPath("$.message").value("Parâmetro 'ano' com valor inválido: não-é-um-ano"));
 	}
 
@@ -92,6 +96,7 @@ class EstatisticasControllerTest {
 		mockMvc.perform(get("/v1/estatisticas/media-mensal").param("naturezaId", "1").param("ano", "2000"))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.success").value(false))
+				.andExpect(jsonPath("$.codigo").value("VALIDACAO"))
 				.andExpect(jsonPath("$.message").value("mediaMensal.ano: must be greater than or equal to 2001"));
 	}
 
@@ -100,6 +105,7 @@ class EstatisticasControllerTest {
 		mockMvc.perform(get("/v1/estatisticas/media-mensal").param("naturezaId", "1").param("ano", "2101"))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.success").value(false))
+				.andExpect(jsonPath("$.codigo").value("VALIDACAO"))
 				.andExpect(jsonPath("$.message").value("mediaMensal.ano: must be less than or equal to 2100"));
 	}
 
@@ -139,6 +145,7 @@ class EstatisticasControllerTest {
 		mockMvc.perform(get("/v1/estatisticas/previsao").param("naturezaId", "1").param("delegaciaId", "5"))
 				.andExpect(status().isNotFound())
 				.andExpect(jsonPath("$.success").value(false))
+				.andExpect(jsonPath("$.codigo").value("RECURSO_NAO_ENCONTRADO"))
 				.andExpect(jsonPath("$.message").value("Delegacia não encontrada com id: 5"));
 	}
 
@@ -148,6 +155,7 @@ class EstatisticasControllerTest {
 						.param("naturezaId", "1").param("delegaciaId", "5").param("regiao", "sul"))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.success").value(false))
+				.andExpect(jsonPath("$.codigo").value("PARAMETRO_INVALIDO"))
 				.andExpect(jsonPath("$.message").value("Informe delegaciaId ou regiao, não ambos."));
 	}
 
@@ -155,7 +163,8 @@ class EstatisticasControllerTest {
 	void previsao_deveRetornar400_quandoNaturezaIdAusente() throws Exception {
 		mockMvc.perform(get("/v1/estatisticas/previsao"))
 				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath("$.success").value(false));
+				.andExpect(jsonPath("$.success").value(false))
+				.andExpect(jsonPath("$.codigo").value("VALIDACAO"));
 	}
 
 	// ---------- /tendencia ----------
@@ -192,6 +201,7 @@ class EstatisticasControllerTest {
 		mockMvc.perform(get("/v1/estatisticas/tendencia").param("naturezaId", "1").param("delegaciaId", "5"))
 				.andExpect(status().isNotFound())
 				.andExpect(jsonPath("$.success").value(false))
+				.andExpect(jsonPath("$.codigo").value("RECURSO_NAO_ENCONTRADO"))
 				.andExpect(jsonPath("$.message").value("Delegacia não encontrada com id: 5"));
 	}
 
@@ -201,6 +211,7 @@ class EstatisticasControllerTest {
 						.param("naturezaId", "1").param("delegaciaId", "5").param("regiao", "sul"))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.success").value(false))
+				.andExpect(jsonPath("$.codigo").value("PARAMETRO_INVALIDO"))
 				.andExpect(jsonPath("$.message").value("Informe delegaciaId ou regiao, não ambos."));
 	}
 
@@ -208,6 +219,7 @@ class EstatisticasControllerTest {
 	void tendencia_deveRetornar400_quandoNaturezaIdAusente() throws Exception {
 		mockMvc.perform(get("/v1/estatisticas/tendencia"))
 				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath("$.success").value(false));
+				.andExpect(jsonPath("$.success").value(false))
+				.andExpect(jsonPath("$.codigo").value("VALIDACAO"));
 	}
 }

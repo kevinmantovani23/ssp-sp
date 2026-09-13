@@ -74,6 +74,7 @@ class DelegaciasControllerTest {
 		mockMvc.perform(get("/v1/delegacias/99"))
 				.andExpect(status().isNotFound())
 				.andExpect(jsonPath("$.success").value(false))
+				.andExpect(jsonPath("$.codigo").value("RECURSO_NAO_ENCONTRADO"))
 				.andExpect(jsonPath("$.message").value("Delegacia não encontrada com id: 99"))
 				.andExpect(jsonPath("$.data").doesNotExist());
 	}
