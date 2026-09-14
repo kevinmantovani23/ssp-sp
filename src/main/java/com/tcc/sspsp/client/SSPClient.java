@@ -190,7 +190,6 @@ public class SSPClient {
                         .orElseGet(() -> {
                             Natureza nova = new Natureza();
                             nova.setNatureza(n);
-                            nova.setCaracteristica("");
                             return naturezaRepository.save(nova);
                         })
         );

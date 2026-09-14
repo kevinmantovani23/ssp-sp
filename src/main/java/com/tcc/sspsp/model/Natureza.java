@@ -14,7 +14,4 @@ public class Natureza {
  
     @Column(nullable = false, unique = true, length = 100)
     private String natureza;
- 
-    @Column(length = 50)
-    private String caracteristica;
 }
