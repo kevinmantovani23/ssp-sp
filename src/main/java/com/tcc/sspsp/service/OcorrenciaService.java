@@ -37,9 +37,10 @@ public class OcorrenciaService {
     public List<TotalNaturezaDTO> totalPorNatureza(Integer ano) {
         return repo.totalPorNaturezaEAno(ano).stream()
                 .map(row -> new TotalNaturezaDTO(
-                        (String)  row[0],
-                        ((Number) row[1]).intValue(),
-                        ((Number) row[2]).longValue()
+                        ((Number) row[0]).longValue(),
+                        (String)  row[1],
+                        ((Number) row[2]).intValue(),
+                        ((Number) row[3]).longValue()
                 ))
                 .toList();
     }
@@ -58,9 +59,10 @@ public class OcorrenciaService {
     public List<RankingDelegaciaDTO> rankingDelegacias(Integer ano, Long naturezaId) {
         return repo.rankingDelegacias(ano, naturezaId).stream()
                 .map(row -> new RankingDelegaciaDTO(
-                        (String)  row[0],
+                        ((Number) row[0]).longValue(),
                         (String)  row[1],
-                        ((Number) row[2]).longValue()
+                        (String)  row[2],
+                        ((Number) row[3]).longValue()
                 ))
                 .toList();
     }

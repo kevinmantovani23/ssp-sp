@@ -38,14 +38,14 @@ class OcorrenciaServiceTest {
 	@Test
 	void totalPorNatureza_deveMapearObjectArrayParaDTO() {
 		when(repo.totalPorNaturezaEAno(2024)).thenReturn(List.of(
-				new Object[] { "ROUBO", 2024, 100L },
-				new Object[] { "FURTO", 2024, 50L }));
+				new Object[] { 1L, "ROUBO", 2024, 100L },
+				new Object[] { 2L, "FURTO", 2024, 50L }));
 
 		List<TotalNaturezaDTO> resultado = ocorrenciaService.totalPorNatureza(2024);
 
 		assertEquals(2, resultado.size());
-		assertEquals(new TotalNaturezaDTO("ROUBO", 2024, 100L), resultado.get(0));
-		assertEquals(new TotalNaturezaDTO("FURTO", 2024, 50L), resultado.get(1));
+		assertEquals(new TotalNaturezaDTO(1L, "ROUBO", 2024, 100L), resultado.get(0));
+		assertEquals(new TotalNaturezaDTO(2L, "FURTO", 2024, 50L), resultado.get(1));
 	}
 
 	// ---------- serieHistorica ----------
@@ -68,14 +68,14 @@ class OcorrenciaServiceTest {
 	@Test
 	void rankingDelegacias_deveMapearObjectArrayParaDTO() {
 		when(repo.rankingDelegacias(2024, 1L)).thenReturn(List.of(
-				new Object[] { "1º DP", "sul", 30L },
-				new Object[] { "2º DP", "norte", 20L }));
+				new Object[] { 1L, "1º DP", "sul", 30L },
+				new Object[] { 2L, "2º DP", "norte", 20L }));
 
 		List<RankingDelegaciaDTO> resultado = ocorrenciaService.rankingDelegacias(2024, 1L);
 
 		assertEquals(2, resultado.size());
-		assertEquals(new RankingDelegaciaDTO("1º DP", "sul", 30L), resultado.get(0));
-		assertEquals(new RankingDelegaciaDTO("2º DP", "norte", 20L), resultado.get(1));
+		assertEquals(new RankingDelegaciaDTO(1L, "1º DP", "sul", 30L), resultado.get(0));
+		assertEquals(new RankingDelegaciaDTO(2L, "2º DP", "norte", 20L), resultado.get(1));
 	}
 
 	@Test
@@ -83,11 +83,12 @@ class OcorrenciaServiceTest {
 		// Delegacias.regiao é uma coluna opcional no banco, então uma linha
 		// real pode chegar com região nula.
 		when(repo.rankingDelegacias(2024, 1L)).thenReturn(List.<Object[]>of(
-				new Object[] { "1º DP", null, 30L }));
+				new Object[] { 1L, "1º DP", null, 30L }));
 
 		List<RankingDelegaciaDTO> resultado = ocorrenciaService.rankingDelegacias(2024, 1L);
 
 		assertEquals(1, resultado.size());
+		assertEquals(1L, resultado.get(0).delegaciaId());
 		assertEquals("1º DP", resultado.get(0).delegacia());
 		assertNull(resultado.get(0).regiao());
 		assertEquals(30L, resultado.get(0).total());

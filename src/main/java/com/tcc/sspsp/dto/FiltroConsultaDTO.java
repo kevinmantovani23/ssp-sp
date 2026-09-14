@@ -1,6 +1,7 @@
 package com.tcc.sspsp.dto;
 
 import com.tcc.sspsp.utils.NormalizaCampos;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
@@ -8,8 +9,8 @@ public record FiltroConsultaDTO(
         @NotNull Long naturezaId,
         Long delegaciaId,
         String regiao,
-        @Min(2001) Integer anoInicio,
-        @Min(2001) Integer anoFim
+        @Min(2001) @Max(2100) Integer anoInicio,
+        @Min(2001) @Max(2100) Integer anoFim
 ) {
     public FiltroConsultaDTO {
         if (delegaciaId != null && regiao != null)

@@ -74,11 +74,12 @@ class OcorrenciaControllerTest {
 
 	@Test
 	void totaisPorNatureza_deveRetornar200ComEnvelope() throws Exception {
-		when(service.totalPorNatureza(2024)).thenReturn(List.of(new TotalNaturezaDTO("ROUBO", 2024, 100L)));
+		when(service.totalPorNatureza(2024)).thenReturn(List.of(new TotalNaturezaDTO(1L, "ROUBO", 2024, 100L)));
 
 		mockMvc.perform(get("/v1/ocorrencias/totais").param("ano", "2024"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.success").value(true))
+				.andExpect(jsonPath("$.data[0].naturezaId").value(1))
 				.andExpect(jsonPath("$.data[0].natureza").value("ROUBO"))
 				.andExpect(jsonPath("$.data[0].total").value(100));
 	}
@@ -116,15 +117,25 @@ class OcorrenciaControllerTest {
 				.andExpect(jsonPath("$.codigo").value("VALIDACAO"));
 	}
 
+	@Test
+	void serieHistorica_deveRetornar400_quandoAnoInicioDepoisDe2100() throws Exception {
+		mockMvc.perform(get("/v1/ocorrencias/serie-historica")
+						.param("naturezaId", "1").param("anoInicio", "2101"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.success").value(false))
+				.andExpect(jsonPath("$.codigo").value("VALIDACAO"));
+	}
+
 	// ---------- GET /v1/ocorrencias/ranking-delegacias ----------
 
 	@Test
 	void rankingDelegacias_deveRetornar200ComEnvelope() throws Exception {
-		when(service.rankingDelegacias(2024, null)).thenReturn(List.of(new RankingDelegaciaDTO("1º DP", "sul", 30L)));
+		when(service.rankingDelegacias(2024, null)).thenReturn(List.of(new RankingDelegaciaDTO(1L, "1º DP", "sul", 30L)));
 
 		mockMvc.perform(get("/v1/ocorrencias/ranking-delegacias").param("ano", "2024"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.success").value(true))
+				.andExpect(jsonPath("$.data[0].delegaciaId").value(1))
 				.andExpect(jsonPath("$.data[0].delegacia").value("1º DP"))
 				.andExpect(jsonPath("$.data[0].total").value(30));
 	}

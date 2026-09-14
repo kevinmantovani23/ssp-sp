@@ -33,13 +33,14 @@ public interface OcorrenciaRepository extends JpaRepository<Ocorrencia, Long> {
 
     // totais por natureza e ano — grafico de barras
     @Query("""
-        SELECT n.natureza                    AS natureza,
+        SELECT n.id                          AS naturezaId,
+               n.natureza                    AS natureza,
                FUNCTION('YEAR', o.data)     AS ano,
                SUM(o.quantidade)            AS total
         FROM Ocorrencia o
         JOIN o.natureza n
         WHERE (:ano IS NULL OR FUNCTION('YEAR', o.data) = :ano)
-        GROUP BY n.natureza, FUNCTION('YEAR', o.data)
+        GROUP BY n.id, n.natureza, FUNCTION('YEAR', o.data)
         ORDER BY total DESC
     """)
     List<Object[]> totalPorNaturezaEAno(@Param("ano") Integer ano);
@@ -84,14 +85,15 @@ public interface OcorrenciaRepository extends JpaRepository<Ocorrencia, Long> {
 
     // ranking de delegacias
     @Query("""
-        SELECT d.delegacia              AS delegacia,
+        SELECT d.id                    AS delegaciaId,
+               d.delegacia              AS delegacia,
                d.regiao                AS regiao,
                SUM(o.quantidade)       AS total
         FROM Ocorrencia o
         JOIN o.delegacia d
         WHERE (:ano IS NULL OR FUNCTION('YEAR', o.data) = :ano)
           AND (:naturezaId IS NULL OR o.natureza.id = :naturezaId)
-        GROUP BY d.delegacia, d.regiao
+        GROUP BY d.id, d.delegacia, d.regiao
         ORDER BY total DESC
     """)
     List<Object[]> rankingDelegacias(@Param("ano") Integer ano, @Param("naturezaId") Long naturezaId);
