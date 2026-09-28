@@ -1,0 +1,125 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1420" height="1170" viewBox="0 0 1420 1170" font-family="Arial, Helvetica, sans-serif">
+  <defs>
+    <marker id="ponta" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto">
+      <path d="M0,0 L11,4.5 L0,9" fill="none" stroke="#5c5c5c" stroke-width="1.3"/>
+    </marker>
+  </defs>
+  <rect width="1420" height="1170" fill="#ffffff"/>
+
+  <!-- ================= ATOR PRINCIPAL ================= -->
+  <g stroke="#1a1a1a" stroke-width="1.8" fill="none">
+    <circle cx="150" cy="538" r="18"/>
+    <line x1="150" y1="556" x2="150" y2="634"/>
+    <line x1="118" y1="568" x2="182" y2="568"/>
+    <line x1="150" y1="634" x2="124" y2="676"/>
+    <line x1="150" y1="634" x2="176" y2="676"/>
+  </g>
+  <text x="150" y="702" text-anchor="middle" font-size="14" font-weight="bold" fill="#1a1a1a">Usuário</text>
+  <text x="150" y="721" text-anchor="middle" font-size="11.5" fill="#5c5c5c">cidadão, pesquisador</text>
+  <text x="150" y="738" text-anchor="middle" font-size="11.5" fill="#5c5c5c">ou jornalista de dados</text>
+
+  <!-- ================= FRONTEIRA DO SISTEMA ================= -->
+  <rect x="340" y="45" width="600" height="1050" fill="none" stroke="#1a1a1a" stroke-width="1.6"/>
+  <text x="640" y="76" text-anchor="middle" font-size="14.5" font-weight="bold" fill="#1a1a1a">SegurançaSP - Consulta de dados criminais em São Paulo</text>
+  <line x1="340" y1="92" x2="940" y2="92" stroke="#c4c4c4" stroke-width="1"/>
+
+  <!-- ================= ASSOCIAÇÕES DO USUÁRIO ================= -->
+  <g stroke="#1a1a1a" stroke-width="1.3" fill="none">
+    <path d="M151,558 H200 V140 H485"/>
+    <path d="M151,562 H228 V388 H485"/>
+    <path d="M151,566 H256 V480 H485"/>
+    <path d="M151,572 H485"/>
+    <path d="M151,576 H324 V664 H485"/>
+    <path d="M151,584 H296 V756 H485"/>
+    <path d="M151,592 H268 V866 H485"/>
+    <path d="M151,600 H240 V958 H485"/>
+    <path d="M151,608 H212 V1050 H485"/>
+  </g>
+
+  <!-- ================= ASSOCIAÇÕES DOS ATORES SECUNDÁRIOS ================= -->
+  <g stroke="#1a1a1a" stroke-width="1.3" fill="none">
+    <path d="M1140,490 H1108 V140 H795"/>
+    <path d="M1140,496 H1086 V276 H795"/>
+    <path d="M1140,502 H1064 V388 H795"/>
+    <path d="M1140,508 H1042 V480 H795"/>
+    <path d="M1140,552 H1032 V572 H795"/>
+    <path d="M1140,558 H1054 V664 H795"/>
+    <path d="M1140,564 H1076 V756 H795"/>
+    <path d="M1140,570 H1098 V866 H795"/>
+    <path d="M1140,958 H795"/>
+  </g>
+
+  <!-- ================= RELAÇÕES INCLUDE ================= -->
+  <g stroke="#5c5c5c" stroke-width="1.3" stroke-dasharray="6 4" fill="none" marker-end="url(#ponta)">
+    <!-- Cada consulta inclui a definição do filtro -->
+    <path d="M501,374 H438 V232 H680 V170.92"/>
+    <path d="M501,466 H416 V220 H640 V172"/>
+    <path d="M501,558 H394 V208 H600 V170.92"/>
+    <path d="M501,650 H372 V196 H560 V167.41"/>
+    <path d="M501,742 H350 V184 H520 V160.25"/>
+    <!-- Definir o filtro depende da cobertura da base -->
+    <path d="M740,164.45 V251.55"/>
+  </g>
+  <g font-size="10.5" fill="#5c5c5c" text-anchor="end">
+    <rect x="444" y="346" width="53" height="14" fill="#ffffff" stroke="none"/>
+    <text x="497" y="357">&#171;include&#187;</text>
+    <rect x="444" y="438" width="53" height="14" fill="#ffffff" stroke="none"/>
+    <text x="497" y="449">&#171;include&#187;</text>
+    <rect x="444" y="530" width="53" height="14" fill="#ffffff" stroke="none"/>
+    <text x="497" y="541">&#171;include&#187;</text>
+    <rect x="444" y="622" width="53" height="14" fill="#ffffff" stroke="none"/>
+    <text x="497" y="633">&#171;include&#187;</text>
+    <rect x="444" y="714" width="53" height="14" fill="#ffffff" stroke="none"/>
+    <text x="497" y="725">&#171;include&#187;</text>
+  </g>
+  <text x="752" y="212" font-size="10.5" fill="#5c5c5c">&#171;include&#187;</text>
+
+  <!-- ================= CASOS DE USO ================= -->
+  <!-- Compartilhado -->
+  <ellipse cx="640" cy="140" rx="155" ry="32" fill="#ededed" stroke="#1a1a1a" stroke-width="1.5"/>
+  <text x="640" y="144.5" text-anchor="middle" font-size="12.5" fill="#1a1a1a">Definir o filtro da consulta</text>
+
+  <ellipse cx="640" cy="276" rx="155" ry="32" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5"/>
+  <text x="640" y="280.5" text-anchor="middle" font-size="12.5" fill="#1a1a1a">Verificar a cobertura da base</text>
+
+  <!-- Consultas analíticas -->
+  <ellipse cx="640" cy="388" rx="155" ry="32" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5"/>
+  <text x="640" y="392.5" text-anchor="middle" font-size="12.5" fill="#1a1a1a">Consultar os totais por tipo de crime</text>
+
+  <ellipse cx="640" cy="480" rx="155" ry="32" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5"/>
+  <text x="640" y="484.5" text-anchor="middle" font-size="12.5" fill="#1a1a1a">Visualizar a evolução mensal</text>
+
+  <ellipse cx="640" cy="572" rx="155" ry="32" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5"/>
+  <text x="640" y="576.5" text-anchor="middle" font-size="12.5" fill="#1a1a1a">Consultar o ranking de delegacias</text>
+
+  <ellipse cx="640" cy="664" rx="155" ry="32" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5"/>
+  <text x="640" y="668.5" text-anchor="middle" font-size="12.5" fill="#1a1a1a">Consultar a distribuição por região</text>
+
+  <ellipse cx="640" cy="756" rx="155" ry="32" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5"/>
+  <text x="640" y="760.5" text-anchor="middle" font-size="12.5" fill="#1a1a1a">Consultar a tendência e a projeção</text>
+
+  <!-- Serviços de apoio -->
+  <ellipse cx="640" cy="866" rx="155" ry="32" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5"/>
+  <text x="640" y="870.5" text-anchor="middle" font-size="12.5" fill="#1a1a1a">Acessar a documentação da API</text>
+
+  <ellipse cx="640" cy="958" rx="155" ry="32" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5"/>
+  <text x="640" y="962.5" text-anchor="middle" font-size="12.5" fill="#1a1a1a">Consultar notícias sobre criminalidade</text>
+
+  <ellipse cx="640" cy="1050" rx="155" ry="32" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5"/>
+  <text x="640" y="1054.5" text-anchor="middle" font-size="12.5" fill="#1a1a1a">Acessar canais de denúncia</text>
+
+  <!-- ================= ATORES SECUNDÁRIOS ================= -->
+  <rect x="1140" y="484" width="220" height="92" fill="#e6e6e6" stroke="#1a1a1a" stroke-width="1.5"/>
+  <text x="1250" y="510" text-anchor="middle" font-size="12" fill="#3d3d3d">&#171;subsistema&#187;</text>
+  <text x="1250" y="532" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1a1a1a">API REST de ocorrências</text>
+  <text x="1250" y="553" text-anchor="middle" font-size="12" fill="#3d3d3d">desenvolvida neste trabalho</text>
+
+  <rect x="1140" y="912" width="220" height="92" fill="#f2f2f2" stroke="#1a1a1a" stroke-width="1.5"/>
+  <text x="1250" y="938" text-anchor="middle" font-size="12" fill="#3d3d3d">&#171;sistema externo&#187;</text>
+  <text x="1250" y="960" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1a1a1a">NewsAPI</text>
+  <text x="1250" y="981" text-anchor="middle" font-size="12" fill="#3d3d3d">newsapi.org — terceiros</text>
+
+  <!-- ================= LEGENDA ================= -->
+  <line x1="60" y1="1118" x2="1360" y2="1118" stroke="#c4c4c4" stroke-width="1"/>
+  <text x="60" y="1138" font-size="11.5" fill="#3d3d3d">&#171;subsistema&#187; identifica a API REST desenvolvida neste trabalho; &#171;sistema externo&#187;, serviço de terceiros. "Acessar canais de denúncia" usa apenas links oficiais externos, sem consumo de API.</text>
+</svg>
