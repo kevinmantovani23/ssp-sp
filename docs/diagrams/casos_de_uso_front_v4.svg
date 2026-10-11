@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1000" viewBox="0 0 1400 1000" font-family="Arial, Helvetica, sans-serif">
+  <rect width="1400" height="1000" fill="#ffffff"/>
+
+  <!-- ================= ATOR: DESENVOLVEDOR ================= -->
+  <g stroke="#1a1a1a" stroke-width="1.8" fill="none">
+    <circle cx="170" cy="102" r="18"/>
+    <line x1="170" y1="120" x2="170" y2="180"/>
+    <line x1="138" y1="136" x2="202" y2="136"/>
+    <line x1="170" y1="180" x2="146" y2="218"/>
+    <line x1="170" y1="180" x2="194" y2="218"/>
+  </g>
+  <text x="170" y="244" text-anchor="middle" font-size="14" font-weight="bold" fill="#1a1a1a">Desenvolvedor</text>
+
+  <!-- ================= ATOR: USUÁRIO ================= -->
+  <g stroke="#1a1a1a" stroke-width="1.8" fill="none">
+    <circle cx="170" cy="522" r="18"/>
+    <line x1="170" y1="540" x2="170" y2="600"/>
+    <line x1="138" y1="556" x2="202" y2="556"/>
+    <line x1="170" y1="600" x2="146" y2="638"/>
+    <line x1="170" y1="600" x2="194" y2="638"/>
+  </g>
+  <text x="170" y="664" text-anchor="middle" font-size="14" font-weight="bold" fill="#1a1a1a">Usuário</text>
+
+  <!-- ================= FRONTEIRA DO SISTEMA ================= -->
+  <rect x="430" y="45" width="500" height="860" fill="none" stroke="#1a1a1a" stroke-width="1.6"/>
+  <text x="680" y="76" text-anchor="middle" font-size="14.5" font-weight="bold" fill="#1a1a1a">SegurançaSP - Consulta de dados criminais em São Paulo</text>
+  <line x1="430" y1="92" x2="930" y2="92" stroke="#c4c4c4" stroke-width="1"/>
+
+  <!-- ================= ASSOCIAÇÕES ================= -->
+  <g stroke="#1a1a1a" stroke-width="1.3" fill="none">
+    <!-- Desenvolvedor -->
+    <line x1="202" y1="136" x2="535" y2="136"/>
+    <!-- Usuário -->
+    <line x1="202" y1="556" x2="631.90" y2="286.19"/>
+    <line x1="202" y1="556" x2="612.35" y2="384.30"/>
+    <line x1="202" y1="556" x2="574.77" y2="478.02"/>
+    <line x1="202" y1="556" x2="535" y2="556"/>
+    <line x1="202" y1="556" x2="574.77" y2="633.98"/>
+    <line x1="202" y1="556" x2="612.35" y2="727.70"/>
+    <line x1="202" y1="556" x2="631.90" y2="825.81"/>
+    <!-- NewsAPI -->
+    <line x1="1120" y1="756" x2="825" y2="756"/>
+  </g>
+
+  <!-- ================= CASOS DE USO ================= -->
+  <ellipse cx="680" cy="136" rx="145" ry="32" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5"/>
+  <text x="680" y="140.5" text-anchor="middle" font-size="12.5" fill="#1a1a1a">Acessar a documentação da API</text>
+
+  <ellipse cx="680" cy="256" rx="145" ry="32" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5"/>
+  <text x="680" y="260.5" text-anchor="middle" font-size="12.5" fill="#1a1a1a">Consultar os totais por tipo de crime</text>
+
+  <ellipse cx="680" cy="356" rx="145" ry="32" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5"/>
+  <text x="680" y="360.5" text-anchor="middle" font-size="12.5" fill="#1a1a1a">Visualizar a evolução mensal</text>
+
+  <ellipse cx="680" cy="456" rx="145" ry="32" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5"/>
+  <text x="680" y="460.5" text-anchor="middle" font-size="12.5" fill="#1a1a1a">Consultar o ranking de delegacias</text>
+
+  <ellipse cx="680" cy="556" rx="145" ry="32" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5"/>
+  <text x="680" y="560.5" text-anchor="middle" font-size="12.5" fill="#1a1a1a">Consultar a distribuição por região</text>
+
+  <ellipse cx="680" cy="656" rx="145" ry="32" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5"/>
+  <text x="680" y="660.5" text-anchor="middle" font-size="12.5" fill="#1a1a1a">Consultar a tendência e a projeção</text>
+
+  <ellipse cx="680" cy="756" rx="145" ry="32" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5"/>
+  <text x="680" y="760.5" text-anchor="middle" font-size="12.5" fill="#1a1a1a">Consultar notícias sobre criminalidade</text>
+
+  <ellipse cx="680" cy="856" rx="145" ry="32" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5"/>
+  <text x="680" y="860.5" text-anchor="middle" font-size="12.5" fill="#1a1a1a">Acessar canais de denúncia</text>
+
+  <!-- ================= ATOR SECUNDÁRIO ================= -->
+  <rect x="1120" y="710" width="220" height="92" fill="#f2f2f2" stroke="#1a1a1a" stroke-width="1.5"/>
+  <text x="1230" y="736" text-anchor="middle" font-size="12" fill="#3d3d3d">&#171;sistema externo&#187;</text>
+  <text x="1230" y="758" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1a1a1a">NewsAPI</text>
+  <text x="1230" y="779" text-anchor="middle" font-size="12" fill="#3d3d3d">newsapi.org — terceiros</text>
+
+  <!-- ================= LEGENDA ================= -->
+  <line x1="60" y1="935" x2="1340" y2="935" stroke="#c4c4c4" stroke-width="1"/>
+  <text x="60" y="955" font-size="11.5" fill="#3d3d3d">&#171;sistema externo&#187; identifica serviço de terceiros, não desenvolvido neste trabalho. "Acessar canais de denúncia" apenas direciona o usuário a canais oficiais externos, sem consumo de dados.</text>
+</svg>
