@@ -10,6 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayOutputStream;
@@ -216,6 +218,59 @@ class SSPClientTest {
 
 		assertTrue(excecao.getMessage().contains("Erro ao baixar Excel: resposta vazia"));
 		wm.verify(1, getRequestedFor(urlPathEqualTo(PATH)));
+	}
+
+	/**
+	 * Planilha com uma natureza específica (ESTUPRO) e uma linha de totalizador
+	 * que a soma (TOTAL DE ESTUPRO (4)) — formato real das planilhas da SSP-SP.
+	 */
+	private byte[] gerarPlanilhaComTotalizador() throws IOException {
+		try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+			Sheet sheet = workbook.createSheet("dados");
+
+			Row cabecalho = sheet.createRow(0);
+			cabecalho.createCell(0).setCellValue("Natureza");
+			for (int mes = 1; mes <= 12; mes++) {
+				cabecalho.createCell(mes).setCellValue("Mes" + mes);
+			}
+
+			Row estupro = sheet.createRow(1);
+			estupro.createCell(0).setCellValue("ESTUPRO");
+			for (int mes = 1; mes <= 12; mes++) {
+				estupro.createCell(mes).setCellValue(mes);
+			}
+
+			Row total = sheet.createRow(2);
+			total.createCell(0).setCellValue("TOTAL DE ESTUPRO (4)");
+			for (int mes = 1; mes <= 12; mes++) {
+				total.createCell(mes).setCellValue(100 + mes);
+			}
+
+			workbook.write(out);
+			return out.toByteArray();
+		}
+	}
+
+	@Test
+	void buscarOcorrencias_deveIgnorarLinhasDeTotalizador() throws IOException {
+		wm.stubFor(get(urlPathEqualTo(PATH)).willReturn(aResponse().withStatus(200)
+				.withHeader("Content-Type", XLSX_CONTENT_TYPE)
+				.withBody(gerarPlanilhaComTotalizador())));
+
+		mockarRepositorios();
+
+		List<YearMonth> anoTodo = IntStream.rangeClosed(1, 12)
+				.mapToObj(mes -> YearMonth.of(2024, mes))
+				.toList();
+
+		List<Ocorrencia> resultado = sspClient.buscarOcorrencias(anoTodo, ID_GRUPO);
+
+		// Só os 12 meses de ESTUPRO; a linha "TOTAL DE ESTUPRO (4)" não gera Ocorrencia.
+		assertEquals(12, resultado.size());
+		assertTrue(resultado.stream().allMatch(o -> o.getNatureza().getNatureza().equals("ESTUPRO")));
+
+		// A natureza de totalizador nunca chega a ser consultada/criada no banco.
+		verify(naturezaRepository, times(1)).save(any());
 	}
 
 	@Test

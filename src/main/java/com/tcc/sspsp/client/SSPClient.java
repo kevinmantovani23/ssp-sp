@@ -84,6 +84,11 @@ public class SSPClient {
 
                 String nomeNatureza = getString(row.getCell(0));
 
+                // Ignorando totais da planilha
+                if (nomeNatureza != null && nomeNatureza.toUpperCase().contains("TOTAL")) {
+                    continue;
+                }
+
                 //Buscar a natureza no banco pelo nome aqui, se não existir criar o registro lá.
                 Natureza natureza = buscarOuCriarNatureza(nomeNatureza, cacheNatureza);
 
