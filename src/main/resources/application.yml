@@ -36,6 +36,15 @@ springdoc:
     operationsSorter: method
     tagsSorter: alpha
  
+app:
+  importacao:
+    # Ano a partir do qual a carga é feita quando a base está vazia.
+    ano-inicial: ${IMPORTACAO_ANO_INICIAL:2020}
+    # Expressão cron da importação automática. Use "-" para desabilitar (ex.: em desenvolvimento).
+    cron: ${IMPORTACAO_CRON:0 0 3 * * *}
+    # Habilita POST /api/v1/admin/importacao. Desabilitar em produção (endpoint sem autenticação).
+    endpoint-habilitado: ${IMPORTACAO_ENDPOINT_HABILITADO:true}
+
 logging:
   level:
     com.tcc.sspsp: DEBUG

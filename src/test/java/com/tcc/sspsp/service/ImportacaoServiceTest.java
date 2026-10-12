@@ -51,9 +51,12 @@ class ImportacaoServiceTest {
 
 	private final YearMonth mesAtual = YearMonth.now().minusMonths(2);
 
+
+	private static final int ANO_INICIAL = 2001;
+
 	@BeforeEach
 	void setUp() {
-		importacaoService = new ImportacaoService(delegaciasRepository, naturezaRepository, ocorrenciaRepository, sspClient);
+		importacaoService = new ImportacaoService(delegaciasRepository, naturezaRepository, ocorrenciaRepository, sspClient, ANO_INICIAL);
 	}
 
 	private Delegacias delegacia(long id, int idSSP) {
@@ -71,7 +74,7 @@ class ImportacaoServiceTest {
 	}
 
 	@Test
-	void obterMesesPendentes_deveGerarDe2001AteNowMenos2_quandoBaseVazia() {
+	void obterMesesPendentes_deveGerarDoAnoInicialAteNowMenos2_quandoBaseVazia() {
 		when(delegaciasRepository.findAll()).thenReturn(List.of(delegacia(1L, 10)));
 		when(ocorrenciaRepository.buscarUltimaDataImportadaPorDelegacia(1L)).thenReturn(null);
 		when(sspClient.buscarOcorrencias(anyList(), eq(10))).thenReturn(List.of());
@@ -80,7 +83,24 @@ class ImportacaoServiceTest {
 
 		verify(sspClient).buscarOcorrencias(mesesCaptor.capture(), eq(10));
 
-		List<YearMonth> esperado = sequenciaDeMeses(YearMonth.of(2001, 1), mesAtual);
+		List<YearMonth> esperado = sequenciaDeMeses(YearMonth.of(ANO_INICIAL, 1), mesAtual);
+		assertEquals(esperado, mesesCaptor.getValue());
+	}
+
+	@Test
+	void obterMesesPendentes_deveRespeitarAnoInicialConfigurado_quandoBaseVazia() {
+		ImportacaoService servicoCom2022 = new ImportacaoService(
+				delegaciasRepository, naturezaRepository, ocorrenciaRepository, sspClient, 2022);
+
+		when(delegaciasRepository.findAll()).thenReturn(List.of(delegacia(1L, 10)));
+		when(ocorrenciaRepository.buscarUltimaDataImportadaPorDelegacia(1L)).thenReturn(null);
+		when(sspClient.buscarOcorrencias(anyList(), eq(10))).thenReturn(List.of());
+
+		servicoCom2022.importarDadosSSP();
+
+		verify(sspClient).buscarOcorrencias(mesesCaptor.capture(), eq(10));
+
+		List<YearMonth> esperado = sequenciaDeMeses(YearMonth.of(2022, 1), mesAtual);
 		assertEquals(esperado, mesesCaptor.getValue());
 	}
 
