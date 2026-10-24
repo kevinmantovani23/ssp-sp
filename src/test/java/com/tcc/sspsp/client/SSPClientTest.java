@@ -273,6 +273,65 @@ class SSPClientTest {
 		verify(naturezaRepository, times(1)).save(any());
 	}
 
+
+	private byte[] gerarPlanilhaComVitimas() throws IOException {
+		try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+			Sheet sheet = workbook.createSheet("dados");
+
+			Row cabecalho = sheet.createRow(0);
+			cabecalho.createCell(0).setCellValue("Natureza");
+			for (int mes = 1; mes <= 12; mes++) {
+				cabecalho.createCell(mes).setCellValue("Mes" + mes);
+			}
+
+			Row latrocinio = sheet.createRow(1);
+			latrocinio.createCell(0).setCellValue("LATROCÍNIO");
+			for (int mes = 1; mes <= 12; mes++) {
+				latrocinio.createCell(mes).setCellValue(mes);
+			}
+
+			Row vitimas = sheet.createRow(2);
+			vitimas.createCell(0).setCellValue("Nº DE VÍTIMAS EM LATROCÍNIO");
+			for (int mes = 1; mes <= 12; mes++) {
+				vitimas.createCell(mes).setCellValue(200 + mes);
+			}
+
+			Row vitimasSemAcento = sheet.createRow(3);
+			vitimasSemAcento.createCell(0).setCellValue("N DE VITIMAS EM HOMICIDIO DOLOSO (3)");
+			for (int mes = 1; mes <= 12; mes++) {
+				vitimasSemAcento.createCell(mes).setCellValue(300 + mes);
+			}
+
+			Row semDescricao = sheet.createRow(4);
+			for (int mes = 1; mes <= 12; mes++) {
+				semDescricao.createCell(mes).setCellValue(400 + mes);
+			}
+
+			workbook.write(out);
+			return out.toByteArray();
+		}
+	}
+
+	@Test
+	void buscarOcorrencias_deveIgnorarLinhasDeVitimasESemDescricao() throws IOException {
+		wm.stubFor(get(urlPathEqualTo(PATH)).willReturn(aResponse().withStatus(200)
+				.withHeader("Content-Type", XLSX_CONTENT_TYPE)
+				.withBody(gerarPlanilhaComVitimas())));
+
+		mockarRepositorios();
+
+		List<YearMonth> anoTodo = IntStream.rangeClosed(1, 12)
+				.mapToObj(mes -> YearMonth.of(2024, mes))
+				.toList();
+
+		List<Ocorrencia> resultado = sspClient.buscarOcorrencias(anoTodo, ID_GRUPO);
+
+		// Só os 12 meses de LATROCÍNIO; linhas de vítimas (RN-07) e sem descrição não geram Ocorrencia.
+		assertEquals(12, resultado.size());
+		assertTrue(resultado.stream().allMatch(o -> o.getNatureza().getNatureza().equals("LATROCÍNIO")));
+		verify(naturezaRepository, times(1)).save(any());
+	}
+
 	@Test
 	void buscarOcorrencias_deveParsearPlanilhaComDuasNaturezasEDozeMeses() throws IOException {
 		wm.stubFor(get(urlPathEqualTo(PATH)).willReturn(aResponse().withStatus(200)

@@ -2,6 +2,7 @@ package com.tcc.sspsp.client;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.text.Normalizer;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -84,8 +85,7 @@ public class SSPClient {
 
                 String nomeNatureza = getString(row.getCell(0));
 
-                // Ignorando totais da planilha
-                if (nomeNatureza != null && nomeNatureza.toUpperCase().contains("TOTAL")) {
+                if (deveIgnorarLinha(nomeNatureza)) {
                     continue;
                 }
 
@@ -183,6 +183,16 @@ public class SSPClient {
             Thread.currentThread().interrupt();
             throw new RuntimeException("Importação interrompida durante espera", e);
         }
+    }
+
+    static boolean deveIgnorarLinha(String nomeNatureza) {
+        if (nomeNatureza == null || nomeNatureza.isBlank()) return true;
+
+        String semAcento = Normalizer.normalize(nomeNatureza, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .toUpperCase();
+
+        return semAcento.contains("TOTAL") || semAcento.contains("VITIMA");
     }
 
     private Natureza buscarOuCriarNatureza(String nome, Map<String, Natureza> cache) {
